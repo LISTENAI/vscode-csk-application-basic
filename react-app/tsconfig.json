@@ -17,10 +17,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "experimentalDecorators":true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "declaration":true
   },
-  "include": [
-    "src"
-, "src/utils"  ]
+  "include": ["./src/**/*.ts", "./src/**/*.d.ts", "./src/**/*.js" ]
 }

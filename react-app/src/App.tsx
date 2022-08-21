@@ -1,36 +1,56 @@
-import { Button } from 'antd';
-import React, { useState,useEffect } from 'react';
+import { Button, Tree } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
+import type { DirectoryTreeProps, DataNode } from 'antd/es/tree';
+import type { Message} from '../../src/data.d';
 import './App.css';
-import {windowVs} from './utils/vsState';
-
+const acquireVsCodeApi = (window as any).acquireVsCodeApi
+const vscode = acquireVsCodeApi && acquireVsCodeApi();
+const { DirectoryTree } = Tree;
 const App: React.FC = () => {
-  const [loadings, setLoadings] = useState<boolean[]>([]);
-  const Vscode = new windowVs()
+  const [treeData, setTreeData] = useState<DataNode[]>([]);
+  const handleMessagesFromExtension = useCallback(
+    (event: MessageEvent<Message>) => {
+      const message = event.data;
+      setTreeData(message.data);
+    },
+    [treeData]
+  );
+ 
   useEffect(() => {
-    Vscode.addCallback(vsCodeMessageCallback)
-  }, []);
-
-  const vsCodeMessageCallback = (message: { type: any; data: string; }) => {
-    console.log('react console')
-    console.log(message)
-
-    switch (message.type) {
-    
-      }
-  };
-   const enterLoading = () => {
-     Vscode.postMessage({
-      type: 'submit',
-      data: 'i am form react app'
+    window.addEventListener('message', (event: MessageEvent<Message>) => {
+      handleMessagesFromExtension(event);
     });
+    return () => {
+      window.removeEventListener('message', handleMessagesFromExtension);
+    };
+  }, [handleMessagesFromExtension]);
+
+  const onSelect: DirectoryTreeProps['onSelect'] = (keys, info) => {
+    console.log('Trigger Select', keys, info);
+  };
+
+  const onExpand: DirectoryTreeProps['onExpand'] = (keys, info) => {
+    console.log('Trigger Expand', keys, info);
+  };
+  const enterLoading = () => {
+    vscode.postMessage({
+        type: 'submit',
+        data: 'i am form react app'
+      });
   };
 
   return (
     <>
-        <Button type="primary"  onClick={enterLoading}>
-          Click me!
-        </Button>
-      
+      <Button type="primary" onClick={enterLoading}>
+        Click me!
+      </Button>
+      <DirectoryTree
+        multiple
+        defaultExpandAll
+        onSelect={onSelect}
+        onExpand={onExpand}
+        treeData={treeData}
+      />
     </>
   );
 };

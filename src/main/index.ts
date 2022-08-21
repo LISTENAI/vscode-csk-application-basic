@@ -18,24 +18,6 @@ export class ReactPanel {
 
     private _disposables: vscode.Disposable[] = [];
 
-    public static createOrShow(extensionPath: string) {
-        const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
-
-        // If we already have a panel, show it.
-        // Otherwise, create a new panel.
-        if (ReactPanel.currentPanel) {
-            ReactPanel.currentPanel._panel.reveal(column);
-        } else {
-            ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
-        }
-        ReactPanel.currentPanel._panel.webview.postMessage({
-            type: 'test',
-            data: {
-                msg: `hello i am from vscode`
-            }
-        });
-    }
-
     private constructor(extensionPath: string, column: vscode.ViewColumn) {
         this._extensionPath = extensionPath;
         this._buildPath = path.join(this._extensionPath, 'dist');
@@ -69,6 +51,41 @@ export class ReactPanel {
             }
         }, null, this._disposables);
     }
+    
+    public static createOrShow(extensionPath: string) {
+        const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
+
+        // If we already have a panel, show it.
+        // Otherwise, create a new panel.
+        if (ReactPanel.currentPanel) {
+            ReactPanel.currentPanel._panel.reveal(column);
+        } else {
+            ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+        }
+        const treeData = [
+            {
+              title: 'parent 0',
+              key: '0-0',
+              children: [
+                { title: 'leaf 0-0', key: '0-0-0', isLeaf: true },
+                { title: 'leaf 0-1', key: '0-0-1', isLeaf: true },
+              ],
+            },
+            {
+              title: 'parent 1',
+              key: '0-1',
+              children: [
+                { title: 'leaf 1-0', key: '0-1-0', isLeaf: true },
+                { title: 'leaf 1-1', key: '0-1-1', isLeaf: true },
+              ],
+            },
+          ];
+        ReactPanel.currentPanel._panel.webview.postMessage({
+            type: 'treeData',
+            data: treeData
+        });
+    }
+
     public async onView() {
         console.log(123)
         // this.updateWebview();
@@ -121,7 +138,6 @@ export class ReactPanel {
 			<body>
 				<noscript>You need to enable JavaScript to run this app.</noscript>
 				<div id="root"></div>
-				
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
