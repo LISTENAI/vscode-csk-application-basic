@@ -1,5 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+import memory from './memory';
+
 /**
  * Manages react webview panels
  */
@@ -22,7 +24,7 @@ export class ReactPanel {
         this._extensionPath = extensionPath;
         this._buildPath = path.join(this._extensionPath, 'dist');
         this._reactBuildPath = path.join(this._extensionPath, 'dist', 'react-app');
-
+        
         // Create and show a new webview panel
         this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Report", column, {
             // Enable javascript in the webview
@@ -40,6 +42,9 @@ export class ReactPanel {
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+        this._panel.onDidChangeViewState((e) => {
+            this._onViewChange();
+        });
 
         // Handle messages from the webview
         this._panel.webview.onDidReceiveMessage(message => {
@@ -50,6 +55,8 @@ export class ReactPanel {
                     return;
             }
         }, null, this._disposables);
+
+        // this._onMount();
     }
     
     public static createOrShow(extensionPath: string) {
@@ -62,34 +69,8 @@ export class ReactPanel {
         } else {
             ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
         }
-        const treeData = [
-            {
-              title: 'parent 0',
-              key: '0-0',
-              children: [
-                { title: 'leaf 0-0', key: '0-0-0', isLeaf: true },
-                { title: 'leaf 0-1', key: '0-0-1', isLeaf: true },
-              ],
-            },
-            {
-              title: 'parent 1',
-              key: '0-1',
-              children: [
-                { title: 'leaf 1-0', key: '0-1-0', isLeaf: true },
-                { title: 'leaf 1-1', key: '0-1-1', isLeaf: true },
-              ],
-            },
-          ];
-        ReactPanel.currentPanel._panel.webview.postMessage({
-            type: 'treeData',
-            data: treeData
-        });
     }
 
-    public async onView() {
-        console.log(123)
-        // this.updateWebview();
-    }
     public doRefactor() {
         // Send a message to the webview webview.
         // You can send any JSON serializable data.
@@ -146,6 +127,36 @@ export class ReactPanel {
             return '';
         }
 
+    }
+
+    // private async _onMount() {
+    //     console.log('onMount')
+    //     this._panel.webview.postMessage({
+    //         type: 'init',
+    //         data: false
+    //     });
+
+    //     const data = await memory.getData();
+        
+    //     this._panel.webview.postMessage({
+    //         type: 'treeData',
+    //         data: data
+    //     });
+
+    //     this._panel.webview.postMessage({
+    //         type: 'init',
+    //         data: true
+    //     });
+    // }
+
+    private async _onViewChange() {
+        if (this._panel.active) {
+            const data = await memory.getData();
+            this._panel.webview.postMessage({
+                type: 'treeData',
+                data: data
+            });
+        }
     }
 
 }
