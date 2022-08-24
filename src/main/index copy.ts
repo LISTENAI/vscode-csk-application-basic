@@ -25,7 +25,7 @@ export class ReactPanel {
         this._reactBuildPath = path.join(this._extensionPath, 'dist', 'react-app');
 
         // Create and show a new webview panel
-        this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Memory Report", column, {
+        this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Report", column, {
             // Enable javascript in the webview
             enableScripts: true,
 
@@ -48,9 +48,9 @@ export class ReactPanel {
             switch (message.type) {
                 case 'openFile':
                     const { path, line } = message.data;
-                    console.log(path, line)
                     const options = {
-                        selection: new vscode.Range(new vscode.Position(1, 1), new vscode.Position(2,1)),
+                        // 选中第3行第9列到第3行第17列
+                        // selection: new vscode.Range(new vscode.Position(line, 1), new vscode.Position(line, 2)),
                         // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
                         preview: false,
                         // 显示在第二个编辑器
@@ -71,15 +71,15 @@ export class ReactPanel {
     }
 
 
-    public static  async getMemoryData ()  {
-        const workspaceFolder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.fsPath;
-        const ramFile = workspaceFolder && path.join(workspaceFolder, 'build', 'ram.json')
-        let ram = [];
-        if (ramFile && await pathExists(ramFile)) {
-            ram = await readJSON(ramFile)
-        }
-        return ram
-    }
+    // public static  async getMemoryData ()  {
+    //     const workspaceFolder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.fsPath;
+    //     const ramFile = workspaceFolder && path.join(workspaceFolder, 'build', 'ram.json')
+    //     let ram = [];
+    //     if (ramFile && await pathExists(ramFile)) {
+    //         ram = await readJSON(ramFile)
+    //     }
+    //     return ram
+    // }
     public static async createOrShow(extensionPath: string) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
         console.log('vscode createOrShow')
@@ -91,8 +91,8 @@ export class ReactPanel {
         } else {
             ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
             // }
-            const treeData = await ReactPanel.getMemoryData()
-            // const treeData = {a:'a',b:'b'}
+            // const treeData = await ReactPanel.getMemoryData()
+            const treeData = {}
             console.log('vscode send message')
             console.log(treeData)
             ReactPanel.currentPanel._panel.webview.postMessage({
@@ -102,6 +102,8 @@ export class ReactPanel {
         }
     }
     public async onView() {
+        console.log(999)
+        console.log('onView')
 
         // this.updateWebview();
     }
@@ -112,6 +114,7 @@ export class ReactPanel {
     }
 
     public dispose() {
+        console.log('dispose')
         ReactPanel.currentPanel = undefined;
 
         // Clean up our resources

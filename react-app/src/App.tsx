@@ -1,17 +1,21 @@
-import { Button, Tree } from 'antd';
+import { Tabs, Button } from "antd";
 import React, { useState, useEffect, useCallback } from 'react';
-import type { DirectoryTreeProps, DataNode } from 'antd/es/tree';
-import type { Message} from '../../src/data.d';
+import type { Message } from '../../src/data.d';
+import Report from "./components/Report";
+
 import './App.css';
-const acquireVsCodeApi = (window as any).acquireVsCodeApi
-const vscode = acquireVsCodeApi && acquireVsCodeApi();
-const { DirectoryTree } = Tree;
+const { TabPane } = Tabs;
 const App: React.FC = () => {
-  const [treeData, setTreeData] = useState<DataNode[]>([]);
+  const [treeData, setTreeData] = useState<any>({});
+  const [tabPanes, setTabPanes] = useState<string[]>([]);
   const handleMessagesFromExtension = useCallback(
     (event: MessageEvent<Message>) => {
       const message = event.data;
-      setTreeData(message.data);
+      console.log("message", message);
+       if (message.type === "treeData") {
+         setTreeData(message.data);
+         setTabPanes(Object.keys(message.data));
+       }
     },
     [treeData]
   );
@@ -25,32 +29,20 @@ const App: React.FC = () => {
     };
   }, [handleMessagesFromExtension]);
 
-  const onSelect: DirectoryTreeProps['onSelect'] = (keys, info) => {
-    console.log('Trigger Select', keys, info);
-  };
-
-  const onExpand: DirectoryTreeProps['onExpand'] = (keys, info) => {
-    console.log('Trigger Expand', keys, info);
-  };
-  const enterLoading = () => {
-    vscode.postMessage({
-        type: 'submit',
-        data: 'i am form react app'
-      });
-  };
+ 
 
   return (
     <>
-      <Button type="primary" onClick={enterLoading}>
-        Click me!
-      </Button>
-      <DirectoryTree
-        multiple
-        defaultExpandAll
-        onSelect={onSelect}
-        onExpand={onExpand}
-        treeData={treeData}
-      />
+      <Button type="primary">Click me!</Button>
+      <Tabs defaultActiveKey={tabPanes[0]}>
+        {tabPanes.map((val: string) => {
+          return (
+            <TabPane tab={val} key={val}>
+              <Report data={treeData[val]} />
+            </TabPane>
+          );
+        })}
+      </Tabs>
     </>
   );
 };

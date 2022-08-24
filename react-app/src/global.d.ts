@@ -1,4 +1,4 @@
-type Message = import('../src/data.d').Message;
+type Message = import('../../src/data').Message;
 
 
 type VSCode = {

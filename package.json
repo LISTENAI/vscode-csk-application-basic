@@ -27,7 +27,8 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "compile": "npm run build:react && webpack",
+    "build":"npm run build:react && npm run compile",
+    "compile": "webpack",
     "watch": "webpack --watch",
     "package": "webpack --mode production --devtool hidden-source-map",
     "build:react": "cd react-app && npm run build",
@@ -39,6 +40,7 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
     "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "^16.11.49",
