@@ -1,5 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+import memory from './memory';
+
 import { pathExists, readJSON } from 'fs-extra'
 /**
  * Manages react webview panels
@@ -23,7 +25,7 @@ export class ReactPanel {
         this._extensionPath = extensionPath;
         this._buildPath = path.join(this._extensionPath, 'dist');
         this._reactBuildPath = path.join(this._extensionPath, 'dist', 'react-app');
-
+        
         // Create and show a new webview panel
         this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Memory Report", column, {
             // Enable javascript in the webview
@@ -41,6 +43,9 @@ export class ReactPanel {
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+        this._panel.onDidChangeViewState((e) => {
+            this._onViewChange();
+        });
 
         // Handle messages from the webview
         this._panel.webview.onDidReceiveMessage(message => {
@@ -68,6 +73,8 @@ export class ReactPanel {
 
             }
         }, null, this._disposables);
+
+        // this._onMount();
     }
 
 
@@ -90,21 +97,9 @@ export class ReactPanel {
             ReactPanel.currentPanel._panel.reveal(column);
         } else {
             ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
-            // }
-            const treeData = await ReactPanel.getMemoryData()
-            // const treeData = {a:'a',b:'b'}
-            console.log('vscode send message')
-            console.log(treeData)
-            ReactPanel.currentPanel._panel.webview.postMessage({
-                type: 'treeData',
-                data: treeData
-            });
         }
     }
-    public async onView() {
 
-        // this.updateWebview();
-    }
     public doRefactor() {
         // Send a message to the webview webview.
         // You can send any JSON serializable data.
@@ -165,6 +160,36 @@ export class ReactPanel {
             return '';
         }
 
+    }
+
+    // private async _onMount() {
+    //     console.log('onMount')
+    //     this._panel.webview.postMessage({
+    //         type: 'init',
+    //         data: false
+    //     });
+
+    //     const data = await memory.getData();
+        
+    //     this._panel.webview.postMessage({
+    //         type: 'treeData',
+    //         data: data
+    //     });
+
+    //     this._panel.webview.postMessage({
+    //         type: 'init',
+    //         data: true
+    //     });
+    // }
+
+    private async _onViewChange() {
+        if (this._panel.active) {
+            const data = await memory.getData();
+            this._panel.webview.postMessage({
+                type: 'treeData',
+                data: data
+            });
+        }
     }
 
 }
