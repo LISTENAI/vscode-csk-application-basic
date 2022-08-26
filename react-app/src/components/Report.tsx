@@ -1,5 +1,5 @@
 import { Tree, Table, Tooltip } from "antd";
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { DirectoryTreeProps, DataNode } from "antd/es/tree";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import {
@@ -10,7 +10,6 @@ import {
   FolderOpenOutlined,
   FileAddOutlined,
 } from "@ant-design/icons";
-// const data = require("../ram.json");
 // console.log(data);
 interface DataType {
   key: React.Key;
@@ -20,29 +19,39 @@ interface DataType {
   percent?: string;
 }
 interface ReportProps {
-  data: {
-    symbols?: any;
-    total_size: number;
-  };
+  data: IMemorySymbol;
 }
+interface IMemorySymbol extends DataNode {
+  name: string;
+  address?: string;
+  size: number;
+  identifier: string;
+  file?: string | undefined;
+  line?: number | undefined;
+  type?: string | undefined;
+  children?: Array<IMemorySymbol>;
+  isLeaf?: boolean;
+}
+
 const { DirectoryTree } = Tree;
 const Report: React.FC<ReportProps> = (props) => {
   const { data } = props;
   const [dataSource, setTreeData] = useState<DataNode[]>([]);
   const [total, setTotal] = useState<number>(0);
+
   // const [tableData, setTableData] = useState<any>([
   //   { name: "Total", size: data.total_size, type: "", percent: "" },
   // ]);
   useEffect(() => {
-    console.log(123)
+    console.log("onmounted");
     if (data) {
-      setTreeData(data.symbols);
-      setTotal(data.total_size);
+      setTreeData([data]);
+      setTotal(data.size);
     }
   }, [data]);
-  const sorterHandle = () => {
-    
-  }
+  const sorterHandle = (item: any) => {
+    return 0;
+  };
   const columns: ColumnsType<DataType> = [
     {
       title: "Name",
@@ -59,7 +68,7 @@ const Report: React.FC<ReportProps> = (props) => {
       title: "Size",
       dataIndex: "size",
       defaultSortOrder: "descend",
-      // sorter: sorterHandle,
+      sorter: sorterHandle,
       width: 100,
       align: "left",
     },
@@ -71,44 +80,63 @@ const Report: React.FC<ReportProps> = (props) => {
     },
   ];
 
-
   const onSelect: DirectoryTreeProps["onSelect"] = (keys, info) => {
-    const node:any = info.node;
-    if (["file", "function", "variable"].includes(node.type)) {
-      const isSvg = (info.nativeEvent.target as any).nodeName === "svg";
-      console.log(node);
-      isSvg && vscode.postMessage({
+    const node: any = info.node;
+    if (node.file) {
+      const isOpen = (info.nativeEvent.target as any).nodeName === "svg" || "path";
+      isOpen &&
+        vscode.postMessage({
           type: "openFile",
-          data: { path: node.identifier,line:node.line },
+          data: { path: node.file, line: node.line },
         });
-      }
-  };
-
-  const onExpand: DirectoryTreeProps["onExpand"] = (keys, info) => {
+    }
   };
 
   const formatSize = (value: number) => {
     return value < 1024 ? `${value} bytes` : `${(value / 1024).toFixed(2)} kb`;
   };
+  const sort = (data: Array<DataNode>, order: string) => {
+    switch (order) {
+      case "ascend":
+        data.sort((a: any, b: any) => a.size - b.size);
+        break;
+      case "descend":
+        data.sort((a: any, b: any) => b.size - a.size);
+        break;
+      default:
+        break;
+    }
+    data.forEach((item) => {
+      if (item.children && item.children.length != 0) {
+        sort(item.children, order);
+      }
+    });
+    return data;
+  };
   const onChange: TableProps<DataType>["onChange"] = (
-    pagination,
-    filters,
-    sorter:any,
-    extra
+    _pagination,
+    _filters,
+    sorter: any,
+    _extra
   ) => {
-    
-    console.log("params", sorter.order);
+    console.log(sorter.order);
+    if (sorter.order) {
+      const newData: Array<DataNode> = sort(dataSource, sorter.order);
+      console.log(newData);
+      setTreeData([...newData]);
+      console.log("123");
+    }
   };
 
-  const nodeRender = (item:any) => {
+  const nodeRender = (item: any) => {
     return (
       <span className="floder-item">
         <span className="name">
           {item.name}
-          {["file", "function", "variable"].includes(item.type) ? (
-            <Tooltip title="打开文件">
-              <FileAddOutlined/>
-            </Tooltip>
+          {item.file ? (
+              <Tooltip title="打开文件">
+                <FileAddOutlined />
+              </Tooltip>
           ) : (
             ""
           )}
@@ -140,16 +168,15 @@ const Report: React.FC<ReportProps> = (props) => {
   return (
     <div className="tree-container">
       <Table columns={columns} onChange={onChange}></Table>
-      <p className="total">
+      {/* <p className="total">
         <span>Total</span>
         <span className="total_size">{total}</span>
-      </p>
+      </p> */}
       <DirectoryTree
         multiple
         defaultExpandAll
         onSelect={onSelect}
-        onExpand={onExpand}
-        treeData = { dataSource }
+        treeData={dataSource}
         rootClassName="folderTree"
         titleRender={nodeRender}
         icon={iconRender}

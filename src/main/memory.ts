@@ -72,11 +72,8 @@ class Memory {
     // /Users/zhaozhuobin/.listenai/lisa-zephyr/packages/node_modules/@binary/gcc-arm-none-eabi-9/binary/bin/arm-none-eabi-objdump -dslw /Users/zhaozhuobin/ifly/zephyr_sample/hello_world/build/zephyr/zephyr.elf
     // arm-none-eabi-nm -Sl /Users/zhaozhuobin/ifly/zephyr_sample/hello_world/build/zephyr/zephyr.elf
     
-    try {
       await this._initData();
-    } catch (error) {
-      return {};
-    }
+   
     const elfbuffer = await readFile(join(this._buildDir(), 'zephyr', 'zephyr.elf'));
     const hash = createHash('md5');
     hash.update(elfbuffer);
@@ -108,14 +105,12 @@ class Memory {
         };
       }
     });
-
     const treeData = {
       // 'md5': md5,
       'flash': objAddParm(rom.symbols, '', symbols),
       'ram': objAddParm(ram.symbols, '', symbols),
       // 'symbols': symbols
     };
-    console.log(treeData);
     return treeData;
   }
 
@@ -128,7 +123,7 @@ class Memory {
 }
 
 function objAddParm(obj: IMemorySymbol, identifier: string, symbols: ISymbols) {
-  if (obj.children) {
+  if (obj&&obj.children) {
     identifier = (identifier === 'root' || !identifier) ? obj.identifier : join(identifier, obj.name);
     try {
       const fsstat = statSync(identifier);
@@ -136,7 +131,8 @@ function objAddParm(obj: IMemorySymbol, identifier: string, symbols: ISymbols) {
         obj.type = 'file';
         obj.file = identifier;
       }  
-    } catch (error) {}
+    } catch (error) { }
+
     obj.children = obj.children.map(symbol => objAddParm(symbol, identifier, symbols));
   } else {
     obj.isLeaf = true;

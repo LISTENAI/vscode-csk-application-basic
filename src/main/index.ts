@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import memory from './memory';
+import { pathExists } from 'fs-extra';
 
-import { pathExists, readJSON } from 'fs-extra'
+import memory from './memory';
 /**
  * Manages react webview panels
  */
@@ -19,13 +19,16 @@ export class ReactPanel {
     private readonly _buildPath: string;
     private readonly _reactBuildPath: string;
 
+    private readonly _data: any;
+
     private _disposables: vscode.Disposable[] = [];
 
-    private constructor(extensionPath: string, column: vscode.ViewColumn) {
+    private constructor(extensionPath: string, column: vscode.ViewColumn,data:any) {
+        this._data = data;
         this._extensionPath = extensionPath;
         this._buildPath = path.join(this._extensionPath, 'dist');
         this._reactBuildPath = path.join(this._extensionPath, 'dist', 'react-app');
-        
+
         // Create and show a new webview panel
         this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Memory Report", column, {
             // Enable javascript in the webview
@@ -44,18 +47,28 @@ export class ReactPanel {
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         this._panel.onDidChangeViewState((e) => {
-            this._onViewChange();
+            // this._onViewChange();
         });
 
         // Handle messages from the webview
-        this._panel.webview.onDidReceiveMessage(message => {
+        this._panel.webview.onDidReceiveMessage(async message => {
             console.log(message)
             switch (message.type) {
+                case 'mounted':
+                     this._panel.webview.postMessage({
+                        type: 'treeData',
+                        data: this._data
+                    });
+                    return
                 case 'openFile':
                     const { path, line } = message.data;
                     console.log(path, line)
+                    if (! await pathExists(path)) {
+                        return
+                    }
+                    const lineNum = line - 1 || 0
                     const options = {
-                        selection: new vscode.Range(new vscode.Position(1, 1), new vscode.Position(2,1)),
+                        selection: new vscode.Range(new vscode.Position(lineNum, 0), new vscode.Position(lineNum, 0)),
                         // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
                         preview: false,
                         // 显示在第二个编辑器
@@ -76,18 +89,32 @@ export class ReactPanel {
 
         // this._onMount();
     }
-
-
-    public static  async getMemoryData ()  {
-        const workspaceFolder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.fsPath;
-        const ramFile = workspaceFolder && path.join(workspaceFolder, 'build', 'ram.json')
-        let ram = [];
-        if (ramFile && await pathExists(ramFile)) {
-            ram = await readJSON(ramFile)
-        }
-        return ram
+    // public static a() {
+    //     return new Promise<any>(resolve => {
+    //         setTimeout(() => {
+    //             resolve([])
+    //         },10000)
+    //     })
+    // }
+    public static async showLoading(extensionPath: string) {
+        const data: any = await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+        }, async (progress) => {
+            progress.report({
+                message: `Generating memory reports ...`,
+            });
+           try {
+            //    return await this.a();
+               return  await memory.getData();
+            } catch (e) {
+                throw new Error(`${e}`);
+           }
+          
+       })
+        await this.createOrShow(extensionPath, data)
     }
-    public static async createOrShow(extensionPath: string) {
+
+    public static async createOrShow(extensionPath: string,data:Array<any>) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
         console.log('vscode createOrShow')
 
@@ -95,9 +122,14 @@ export class ReactPanel {
         // Otherwise, create a new panel.
         if (ReactPanel.currentPanel) {
             ReactPanel.currentPanel._panel.reveal(column);
+            ReactPanel.currentPanel._panel.webview.postMessage({
+                type: 'treeData',
+                data: data
+            });
         } else {
-            ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+            ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One,data);
         }
+ 
     }
 
     public doRefactor() {
@@ -162,29 +194,10 @@ export class ReactPanel {
 
     }
 
-    // private async _onMount() {
-    //     console.log('onMount')
-    //     this._panel.webview.postMessage({
-    //         type: 'init',
-    //         data: false
-    //     });
-
-    //     const data = await memory.getData();
-        
-    //     this._panel.webview.postMessage({
-    //         type: 'treeData',
-    //         data: data
-    //     });
-
-    //     this._panel.webview.postMessage({
-    //         type: 'init',
-    //         data: true
-    //     });
-    // }
-
     private async _onViewChange() {
         if (this._panel.active) {
             const data = await memory.getData();
+            console.log(data)
             this._panel.webview.postMessage({
                 type: 'treeData',
                 data: data
