@@ -43,7 +43,6 @@ const Report: React.FC<ReportProps> = (props) => {
   //   { name: "Total", size: data.total_size, type: "", percent: "" },
   // ]);
   useEffect(() => {
-    console.log("onmounted");
     if (data) {
       setTreeData([data]);
       setTotal(data.size);
@@ -83,7 +82,8 @@ const Report: React.FC<ReportProps> = (props) => {
   const onSelect: DirectoryTreeProps["onSelect"] = (keys, info) => {
     const node: any = info.node;
     if (node.file) {
-      const isOpen = (info.nativeEvent.target as any).nodeName === "svg" || "path";
+      // console.log(info.nativeEvent.target)
+      const isOpen = (info.nativeEvent.target as any).nodeName === ("svg" || "path");
       isOpen &&
         vscode.postMessage({
           type: "openFile",
@@ -119,12 +119,10 @@ const Report: React.FC<ReportProps> = (props) => {
     sorter: any,
     _extra
   ) => {
-    console.log(sorter.order);
     if (sorter.order) {
       const newData: Array<DataNode> = sort(dataSource, sorter.order);
       console.log(newData);
       setTreeData([...newData]);
-      console.log("123");
     }
   };
 

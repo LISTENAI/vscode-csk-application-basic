@@ -598,7 +598,7 @@ module.exports = function (webpackEnv) {
                 {
                   lessOptions: {
                     javascriptEnabled: true,
-                    modifyVars: { '@primary-color': '#333' },
+                    // modifyVars: { '@primary-color': '#333' },
                   }
                 }
               ),
@@ -618,7 +618,7 @@ module.exports = function (webpackEnv) {
                 {
                   lessOptions: {
                     javascriptEnabled: true,
-                    modifyVars: { '@primary-color': '#3333' },
+                    // modifyVars: { '@primary-color': '#3333' },
                   }
                 }
               ),

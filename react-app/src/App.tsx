@@ -1,4 +1,4 @@
-import { Tabs, Spin } from "antd";
+import { Tabs, Spin, ConfigProvider } from "antd";
 import React, { useState, useEffect } from "react";
 import type { Message } from "../../src/data.d";
 import Report from "./components/Report";
@@ -17,8 +17,17 @@ const App: React.FC = () => {
       setLoading(false);
     }
   };
-
+  const getStyle = (str: string) => {
+    return window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue(str);
+  };
   useEffect(() => {
+    ConfigProvider.config({
+      theme: {
+        primaryColor: getStyle("--vscode-editor-background") ,
+      },
+    });
     vscode.postMessage({
       type: "mounted",
       data: {},
