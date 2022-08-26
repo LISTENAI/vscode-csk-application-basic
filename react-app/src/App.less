@@ -1,0 +1,79 @@
+@import "antd/dist/antd.less";
+/* @import '~antd/dist/antd.dark.css'; */
+
+.report-container {
+  height: 100vh;
+}
+.loading-area{
+  height: 100vh;
+
+}
+
+.folderTree {
+  width: auto;
+  min-width: 500px;
+  overflow: auto;
+}
+
+.folderTree .floder-item {
+  position: absolute;
+  right: 0;
+  left: 30px;
+  top: 0;
+  bottom: 0;
+  text-align: left;
+}
+.folderTree .floder-item span{
+  box-sizing: border-box;
+  padding:0 16px;
+}
+
+.folderTree .floder-item .name {
+  position: absolute;
+  left: 0px;
+  padding:0;
+}
+
+.folderTree .floder-item .ram_type {
+  position: absolute;
+  right: 200px;
+  width: 100px;
+}
+.folderTree .floder-item .size {
+  position: absolute;
+  right:100px;
+  width: 100px;
+}
+.folderTree .floder-item .percent {
+  position: absolute;
+  width: 100px;
+  right: 0px;
+  text-align: right;
+}
+.total{
+  position: relative;
+  margin:0;
+  padding:16px 0;
+  font-weight: bold;
+}
+.total span{
+  box-sizing: border-box;
+  padding: 16px;
+}
+.total .total_size{
+  position: absolute;
+  right:100px;
+  width: 100px;
+   padding:0 16px;
+}
+
+.ant-table-tbody {
+  display: none !important;
+}
+.tree-container{
+  min-width: 700px;
+}
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn{
+  font-weight: bold;
+}
+.ant-table{}

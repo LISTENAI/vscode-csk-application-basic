@@ -1,8 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { pathExists } from 'fs-extra';
-
-import memory from './memory';
+import { pathExists, readJSON } from 'fs-extra'
 /**
  * Manages react webview panels
  */
@@ -19,18 +17,15 @@ export class ReactPanel {
     private readonly _buildPath: string;
     private readonly _reactBuildPath: string;
 
-    private readonly _data: any;
-
     private _disposables: vscode.Disposable[] = [];
 
-    private constructor(extensionPath: string, column: vscode.ViewColumn,data:any) {
-        this._data = data;
+    private constructor(extensionPath: string, column: vscode.ViewColumn) {
         this._extensionPath = extensionPath;
         this._buildPath = path.join(this._extensionPath, 'dist');
         this._reactBuildPath = path.join(this._extensionPath, 'dist', 'react-app');
 
         // Create and show a new webview panel
-        this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Memory Report", column, {
+        this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Report", column, {
             // Enable javascript in the webview
             enableScripts: true,
 
@@ -46,29 +41,16 @@ export class ReactPanel {
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-        this._panel.onDidChangeViewState((e) => {
-            // this._onViewChange();
-        });
 
         // Handle messages from the webview
-        this._panel.webview.onDidReceiveMessage(async message => {
+        this._panel.webview.onDidReceiveMessage(message => {
             console.log(message)
             switch (message.type) {
-                case 'mounted':
-                     this._panel.webview.postMessage({
-                        type: 'treeData',
-                        data: this._data
-                    });
-                    return
                 case 'openFile':
                     const { path, line } = message.data;
-                    console.log(path, line)
-                    if (! await pathExists(path)) {
-                        return
-                    }
-                    const lineNum = line - 1 || 0
                     const options = {
-                        selection: new vscode.Range(new vscode.Position(lineNum, 0), new vscode.Position(lineNum, 0)),
+                        // 选中第3行第9列到第3行第17列
+                        // selection: new vscode.Range(new vscode.Position(line, 1), new vscode.Position(line, 2)),
                         // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
                         preview: false,
                         // 显示在第二个编辑器
@@ -86,35 +68,19 @@ export class ReactPanel {
 
             }
         }, null, this._disposables);
-
-        // this._onMount();
     }
-    // public static a() {
-    //     return new Promise<any>(resolve => {
-    //         setTimeout(() => {
-    //             resolve([])
-    //         },10000)
-    //     })
+
+
+    // public static  async getMemoryData ()  {
+    //     const workspaceFolder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.fsPath;
+    //     const ramFile = workspaceFolder && path.join(workspaceFolder, 'build', 'ram.json')
+    //     let ram = [];
+    //     if (ramFile && await pathExists(ramFile)) {
+    //         ram = await readJSON(ramFile)
+    //     }
+    //     return ram
     // }
-    public static async showLoading(extensionPath: string) {
-        const data: any = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-        }, async (progress) => {
-            progress.report({
-                message: `Generating memory reports ...`,
-            });
-           try {
-            //    return await this.a();
-               return  await memory.getData();
-            } catch (e) {
-                throw new Error(`${e}`);
-           }
-          
-       })
-        await this.createOrShow(extensionPath, data)
-    }
-
-    public static async createOrShow(extensionPath: string,data:Array<any>) {
+    public static async createOrShow(extensionPath: string) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
         console.log('vscode createOrShow')
 
@@ -122,16 +88,25 @@ export class ReactPanel {
         // Otherwise, create a new panel.
         if (ReactPanel.currentPanel) {
             ReactPanel.currentPanel._panel.reveal(column);
+        } else {
+            ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+            // }
+            // const treeData = await ReactPanel.getMemoryData()
+            const treeData = {}
+            console.log('vscode send message')
+            console.log(treeData)
             ReactPanel.currentPanel._panel.webview.postMessage({
                 type: 'treeData',
-                data: data
+                data: treeData
             });
-        } else {
-            ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One,data);
         }
- 
     }
+    public async onView() {
+        console.log(999)
+        console.log('onView')
 
+        // this.updateWebview();
+    }
     public doRefactor() {
         // Send a message to the webview webview.
         // You can send any JSON serializable data.
@@ -139,6 +114,7 @@ export class ReactPanel {
     }
 
     public dispose() {
+        console.log('dispose')
         ReactPanel.currentPanel = undefined;
 
         // Clean up our resources
@@ -192,17 +168,6 @@ export class ReactPanel {
             return '';
         }
 
-    }
-
-    private async _onViewChange() {
-        if (this._panel.active) {
-            const data = await memory.getData();
-            console.log(data)
-            this._panel.webview.postMessage({
-                type: 'treeData',
-                data: data
-            });
-        }
     }
 
 }
