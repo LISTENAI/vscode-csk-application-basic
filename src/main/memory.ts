@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {join} from 'path';
+import {join, sep} from 'path';
 import { pathExists, readJSON, readFile, statSync } from 'fs-extra';
 import {execa} from 'execa';
 import {createHash} from 'crypto';
@@ -31,6 +31,15 @@ interface ISymbols {
   }
 }
 
+interface IMemoryRange {
+  'rangeStart': string;
+  'rangeEnd': string;
+  'size': number;
+}
+interface IMemoryConfiguration {
+  [key: string]: IMemoryRange;
+}
+
 const types: {
   [key: string]: string
 } = {
@@ -39,6 +48,8 @@ const types: {
   'B': TYPE_VARIABLE,
   'R': TYPE_VARIABLE
 };
+
+const MEMORY_TYPES = ['flash', 'sram', 'itcm', 'psramap'];
 
 class Memory {
   private _data;
@@ -78,6 +89,8 @@ class Memory {
       return {};
     }
     const elfbuffer = await readFile(join(this._buildDir(), 'zephyr', 'zephyr.elf'));
+    
+    const memoryConfiguration = await this._getMemoryConfiguration();
     const hash = createHash('md5');
     hash.update(elfbuffer);
 
@@ -88,6 +101,7 @@ class Memory {
     const gccPrefix = join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-9', 'binary', 'bin');
     const symbols: {
       [key: string]: {
+        'name': string;
         'address': string;
         'size': number;
         'file': string | undefined; 
@@ -95,11 +109,17 @@ class Memory {
         'type': string | undefined;
       }
     } = {};
+
+    const targetData: {
+      [key: string]: IMemorySymbol
+    } = {};
+
     
     await exec(join(gccPrefix, 'arm-none-eabi-nm'), ['-Sl', join(this._buildDir(), 'zephyr', 'zephyr.elf')], {}, (line: string) => {
       const match = line.match(/^([\da-f]{8})\s+([\da-f]{8})\s+(.)\s+(\w+)(\s+(.+):(\d+))?/);
       if (match) {
         symbols[match[4]] = {
+          'name': match[4],
           'address': match[1],
           'size': parseInt(match[2], 16),
           'file': match[6],
@@ -109,12 +129,47 @@ class Memory {
       }
     });
 
+    for (let key in symbols) {
+      const symbol = symbols[key];
+      const memoryType = this._findMemoryType(memoryConfiguration, symbol.address);
+      if (targetData[memoryType]) {
+        targetData[memoryType].children?.push({
+          name: symbol.name,
+          size: symbol.size,
+          address: symbol.address,
+          file: symbol.file,
+          line: symbol.line,
+          identifier: symbol.file || '',
+          type: symbol.type
+        });
+        targetData[memoryType].size += symbol.size;
+      } else {
+        targetData[memoryType] = {
+          children: [{
+            name: symbol.name,
+            size: symbol.size,
+            address: symbol.address,
+            file: symbol.file,
+            line: symbol.line,
+            identifier: symbol.file || '',
+            type: symbol.type
+          }],
+          name: 'Root',
+          identifier: 'root',
+          size: symbol.size
+        };
+      }
+    }
+
+
     const treeData = {
       // 'md5': md5,
       'flash': objAddParm(rom.symbols, '', symbols),
       'ram': objAddParm(ram.symbols, '', symbols),
       // 'symbols': symbols
     };
+    generateTree(targetData['FLASH']?.children);
+    console.log(targetData);
     console.log(treeData);
     return treeData;
   }
@@ -125,6 +180,31 @@ class Memory {
 
 
   // }
+
+  private async _getMemoryConfiguration(): Promise<IMemoryConfiguration> {
+    const mapfile = (await readFile(join(this._buildDir(), 'zephyr', 'zephyr.map'))).toString();
+    const memoryConfigurationStr = mapfile.substring(mapfile.indexOf('Memory Configuration')+20, mapfile.indexOf('Linker script and memory map'));
+    const memoryConfiguration:IMemoryConfiguration = {};
+    memoryConfigurationStr.trim().split('\n').forEach((line, index) => {
+      const match = line.match(/^(\w+)\s+(0x00000000[\da-f]{8})\s+(0x00000000[\da-f]{8})\s+/);
+      if (match && MEMORY_TYPES.includes(match[1].toLowerCase())) {
+        memoryConfiguration[match[1]] = {
+          rangeStart: parseInt(match[2], 16).toString(16),
+          rangeEnd: (parseInt(match[2], 16) + parseInt(match[3], 16)).toString(16),
+          size: parseInt(match[3], 16) / 1024 / 1024
+        };
+      }
+    });
+    return memoryConfiguration;
+  }
+
+  private _findMemoryType(memoryConfiguration: IMemoryConfiguration, address: string): string {
+    const memoryType = Object.keys(memoryConfiguration).find(key => 
+      parseInt(address, 16) >= parseInt(memoryConfiguration[key].rangeStart, 16)
+        && parseInt(address, 16) < parseInt(memoryConfiguration[key].rangeEnd, 16));
+    return memoryType || 'unknown';
+  }
+
 }
 
 function objAddParm(obj: IMemorySymbol, identifier: string, symbols: ISymbols) {
@@ -146,6 +226,42 @@ function objAddParm(obj: IMemorySymbol, identifier: string, symbols: ISymbols) {
     }
   }
   return obj;
+}
+
+function generateTree(nodes: Array<IMemorySymbol> | undefined) {
+  const treeDTO: Array<IMemorySymbol> = []
+
+
+
+  if (!nodes) {
+    return
+  }
+  const tree: IMemorySymbol = {
+    name: 'WORKSPACE',
+    size: 0,
+    identifier: '/Users/zhaozhuobin/ifly/scanpen_csk6/.sdk',
+    children: []
+  };
+  
+  nodes.forEach(node => {
+    const filepath = node?.file?.replace('/Users/zhaozhuobin/ifly/scanpen_csk6/.sdk/', '');
+    
+    const sepPath = filepath?.split(sep);
+    let children = treeDTO;
+
+
+
+    if (sepPath) {
+      sepPath.forEach(key => {
+        if (children)
+        const children = tree.children?.find(item => item.identifier === key) || {
+          name
+        }
+      })
+    }
+  });
+
+
 }
 
 
