@@ -1,11 +1,9 @@
 import * as vscode from 'vscode';
 import {join, sep} from 'path';
-import { pathExists, readJSON, readFile, statSync } from 'fs-extra';
-import {execa} from 'execa';
+import { pathExists, readFile } from 'fs-extra';
 import {createHash} from 'crypto';
 import { homedir } from 'os';
 import exec from '../utils/exec';
-import { chdir } from 'process';
 
 const TYPE_FUNCTION = "function";
 const TYPE_VARIABLE = "variable";
@@ -174,7 +172,7 @@ function generateTree(nodes: Array<IMemorySymbol>): IMemorySymbol {
   
   nodes.forEach(node => {
     
-    const sepPath = node?.file?.split('/');
+    const sepPath = node?.file?.split(sep);
     let children = treeDTO;
 
     if (sepPath) {
