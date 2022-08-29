@@ -1,0 +1,14 @@
+@import 'antd/dist/antd.variable.min.css';
+body {
+
+    background-color: var(--vscode-editor-background)!important;
+    color: var(--vscode-foreground)!important;
+    font-family: var(--vscode-font-family)!important;
+    font-weight: var(--vscode-editor-font-weight)!important;
+  
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
