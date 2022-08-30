@@ -4,7 +4,7 @@ import { pathExists, readJSON, readFile, statSync } from 'fs-extra';
 import {execa} from 'execa';
 import {createHash} from 'crypto';
 import { homedir } from 'os';
-import exec from '../utils/exec';
+import exec from '../../utils/exec';
 
 const TYPE_FUNCTION = "function";
 const TYPE_VARIABLE = "variable";

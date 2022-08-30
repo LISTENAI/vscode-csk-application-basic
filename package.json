@@ -10,6 +10,7 @@
     "Other"
   ],
   "activationEvents": [
+    "onView:csk.menu",
     "onCommand:csk-application-basic.report"
   ],
   "main": "./dist/extension.js",
@@ -23,7 +24,30 @@
         "command": "csk-application-basic.report",
         "title": "report"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "csk",
+          "title": "csk application",
+          "icon": "./src/assets/Icon_commands.svg"
+        }
+      ]
+    },
+    "views": {
+      "csk": [
+        {
+          "id": "csk.menu",
+          "name": "csk快捷菜单"
+        }
+      ],
+      "explorer": [
+        {
+          "id": "nodeDependencies",
+          "name": "Node Dependencies"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
