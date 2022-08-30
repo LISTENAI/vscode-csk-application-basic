@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {join, sep} from 'path';
+import {join} from 'path';
 import { pathExists, readFile } from 'fs-extra';
 import {createHash} from 'crypto';
 import { homedir } from 'os';
@@ -172,7 +172,7 @@ function generateTree(nodes: Array<IMemorySymbol>): IMemorySymbol {
   
   nodes.forEach(node => {
     
-    const sepPath = node?.file?.split(sep);
+    const sepPath = node?.file?.split('/');
     let children = treeDTO;
 
     if (sepPath) {
@@ -181,7 +181,7 @@ function generateTree(nodes: Array<IMemorySymbol>): IMemorySymbol {
         if (key) {
           let treeNode: IMemorySymbol = {
             name: key,
-            identifier: key,
+            identifier: sepPath.slice(0, index+1).reduce((a, b) => a + `/${b}`, ''),
             size: node.size || 0
           };
           if (!children) {
@@ -190,7 +190,7 @@ function generateTree(nodes: Array<IMemorySymbol>): IMemorySymbol {
           let isExist = false;
           for (const i in children) {
             const item = children[i];
-            if (item.identifier === treeNode.identifier) {
+            if (item.name === treeNode.name) {
               item.size += treeNode.size;
               children = item.children || [];
               isExist = true;
