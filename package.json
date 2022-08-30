@@ -3,6 +3,7 @@
   "displayName": "CSK Application Basic",
   "description": "",
   "version": "0.0.1",
+	"publisher": "listenai",
   "engines": {
     "vscode": "^1.70.0"
   },
@@ -10,18 +11,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:csk-application-basic.report"
+    "onCommand:csk-application-basic.memory-report"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "csk-application-basic.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "csk-application-basic.report",
-        "title": "report"
+        "command": "csk-application-basic.memory-report",
+        "title": "Memory Report"
       }
     ]
   },
