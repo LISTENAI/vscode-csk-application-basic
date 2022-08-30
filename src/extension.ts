@@ -16,26 +16,15 @@ export function activate(context: vscode.ExtensionContext) {
 	
 	vscode.window.registerTreeDataProvider('csk.menu', CskMenuProvider);
 
-	let report = vscode.commands.registerCommand('csk-application-basic.report', async () => {
+	let report = vscode.commands.registerCommand('csk-application-basic.memory-report', async () => {
 		if (_generating) {
-			return
+			return;
 		}
 		_generating = true;
 		await ReactPanel.showLoading(context.extensionPath);
 		_generating = false;
-	})
-
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('csk-application-basic.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from CSK Application Basic!');
 	});
-
-	context.subscriptions.push(disposable);
+	
 	context.subscriptions.push(report);
 
 }
