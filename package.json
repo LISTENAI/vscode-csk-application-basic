@@ -3,7 +3,7 @@
   "displayName": "CSK Application Basic",
   "description": "",
   "version": "0.0.1",
-	"publisher": "listenai",
+  "publisher": "listenai",
   "engines": {
     "vscode": "^1.70.0"
   },
@@ -11,8 +11,9 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:csk.menu",
-    "onCommand:csk-application-basic.memory-report"
+      "onView:csk.menu",
+      "onCommand:csk-application-basic.memory-report",
+      "onCommand:csk-application-basic.welcome"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -20,6 +21,31 @@
       {
         "command": "csk-application-basic.memory-report",
         "title": "Memory Report"
+      },
+      {
+        "command": "csk-application-basic.welcome",
+        "title": "Csk Welcome"
+      },
+      {
+        "command": "csk.refreshMenu",
+        "title": "Csk Menu Refresh",
+          "icon": "$(refresh)"
+      },
+      {
+        "command": "csk-application-basic.open-application",
+        "title": "打开应用项目"
+      },
+      {
+        "command": "csk-application-basic.create-application",
+        "title": "创建应用项目"
+      },
+      {
+        "command": "csk-application-basic.open-document",
+        "title": "打开开发文档"
+      },
+      {
+        "command": "csk-application-basic.info",
+        "title": "本机开发信息"
       }
     ],
     "viewsContainers": {
@@ -27,7 +53,7 @@
         {
           "id": "csk",
           "title": "csk application",
-          "icon": "./src/assets/Icon_commands.svg"
+          "icon": "./assets/Icon_commands.svg"
         }
       ]
     },
@@ -37,11 +63,14 @@
           "id": "csk.menu",
           "name": "csk快捷菜单"
         }
-      ],
-      "explorer": [
+      ]
+    },
+    "menus": {
+      "view/title": [
         {
-          "id": "nodeDependencies",
-          "name": "Node Dependencies"
+          "command": "csk.refreshMenu",
+          "when": "view == csk.menu",
+          "group": "navigation"
         }
       ]
     }
@@ -52,8 +81,7 @@
     "compile": "webpack",
     "watch": "webpack --watch",
     "package": "webpack --mode production --devtool hidden-source-map",
-    "build:react": "cd react-app && npm run build",
-    "serve:react": "cd react-app && npm run start",
+    "build:react": "cd react-app && npm run build-all",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",

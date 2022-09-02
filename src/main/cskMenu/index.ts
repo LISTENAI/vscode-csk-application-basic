@@ -1,19 +1,19 @@
 import * as vscode from 'vscode';
 import { soureData, TreeDataModel } from './treeData';
-import * as path from 'path';
+import { cmd } from '../cmd'
 
 export default class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
 {
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
-    data: vscode.TreeItem[] | undefined;
+    data: Array<vscode.TreeItem> = [];
 
     refresh(): void {
         return this._onDidChangeTreeData.fire();
     }
 
     reloadData(): void {
-        this.loadData();
+        this.loadData(soureData);
         this._onDidChangeTreeData.fire();
     }
 
@@ -26,54 +26,70 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
         }
         return element.children;
     }
-
-
-
     constructor() {
-        this.loadData()
-    }
+        const data = this.loadData(soureData);
+        console.log('data---', data)
+        this.data = data;
 
-    loadData(): void {
-        var treeData: Array<vscode.TreeItem> = soureData;
-        var mData: Array<vscode.TreeItem> = [];
+
+    }
+    // static async reloadBasicInfo(): Promise<any> {
+    //     const res = await cmd('lisa info zep');
+    //     const reg = /(ZEPHYR_BASE\s\-\s)(.*)\(版本(.*), commit:(.*)\)/g;
+    //     const matchArr: string[] = reg.exec(res.stdout) || [];
+    //     return {
+    //         path: matchArr[2] || '',
+    //         remote: '',
+    //         version: matchArr[3] || '',
+    //         commit: matchArr[4] || ''
+    //     }
+    // }
+
+    loadData(treeData: Array<vscode.TreeItem>):any {
+        const mData: Array<vscode.TreeItem> = [];
         treeData.forEach((model: any) => {
             const childLength = model.children?.length ? model.children?.length : 0;
             if (childLength > 0) {
-                var mChildData: Array<any> = [];
+                const mChildData: Array<any> = [];
                 model.children!.forEach((childModel: any) => {
-                    const childDataItem: any = new CskTreeItem(childModel);
-                    mChildData.push(childDataItem);
+                    const childModelLength = childModel.children?.length ? childModel.children?.length : 0;
+                    var childDataItem = new CskTreeItem(childModel);
+                    if (childModelLength > 0) {
+                        const childData = this.loadData(childModel.children);
+                        const subChiCldDataItem = new CskTreeItem(childModel, childData)
+                        mChildData.push(subChiCldDataItem);
+                    } else {
+                        mChildData.push(childDataItem);
+                    }
+                   
                 });
-                const childDataItem: any = new CskTreeItem(model, mChildData);
+                const childDataItem = new CskTreeItem(model, mChildData);
                 mData.push(childDataItem)
             } else {
                 mData.push(new CskTreeItem(model));
             }
         });
-        console.log('mData')
-        console.log(mData)
-        this.data = mData;
+        return mData
     }
+    
 }
 
 export class CskTreeItem extends vscode.TreeItem {
-
+    tooltip: string | undefined
+    description: string | undefined
+    iconPath?: vscode.Uri | { light: vscode.Uri; dark: vscode.Uri } | vscode.ThemeIcon
+    command?:any
     constructor(
         Item: TreeDataModel, public children?: CskTreeItem[]
     ) {
         const { label, tooltip, iconPath, command } = Item
         super(label, children === undefined ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Collapsed);
         this.tooltip = tooltip;
-        this.description = tooltip;
-        iconPath && this.getIconPath(iconPath);
-        if(command) this.command = command;
-
-    }
-    private getIconPath(iconPath: { light: string; dark: string }) {
-        this.iconPath = {
-            light: path.join(__dirname, '..', '..', 'assets', 'light', iconPath.light),
-            dark: path.join(__dirname, '..', '..', 'assets', 'dark', iconPath.dark)
-        }
+        if(tooltip)  this.description = tooltip;
+        if (command && typeof command === 'object' && command?.command) {
+            this.command = command
+        } 
+        if (iconPath) this.iconPath = new vscode.ThemeIcon(iconPath);
     }
 
 }

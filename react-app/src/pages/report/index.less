@@ -1,0 +1,147 @@
+@import "antd/dist/antd.variable.less";
+body {
+
+    background-color: var(--vscode-editor-background)!important;
+    color: var(--vscode-foreground)!important;
+    font-family: var(--vscode-font-family)!important;
+    font-weight: var(--vscode-editor-font-weight)!important;
+  
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.report-container {
+  height: 100vh;
+
+  .loading-area {
+    height: 100vh;
+
+  }
+
+  .folderTree {
+    width: auto;
+    min-width: 700px;
+    overflow: auto;
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-foreground);
+
+  }
+
+  .folderTree .floder-item {
+    left: 0;
+    padding: 0;
+    position: absolute;
+    right: 400px;
+    bottom: 0;
+    top: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .folderTree .floder-item span {
+    box-sizing: border-box;
+    padding: 0 16px;
+  }
+
+  .folderTree .floder-item .name {
+    position: absolute;
+    left: 0px;
+    padding: 0;
+  }
+
+  .folderTree .floder-item .ram_type {
+    position: absolute;
+    right: 200px;
+    width: 100px;
+  }
+
+  .folderTree .floder-item .size {
+    position: absolute;
+    right: 100px;
+    width: 100px;
+  }
+
+  .folderTree .floder-item .percent {
+    position: absolute;
+    width: 100px;
+    right: 0px;
+    text-align: right;
+  }
+
+  .total {
+    position: relative;
+    margin: 0;
+    padding: 16px 0;
+    font-weight: bold;
+  }
+
+  .total span {
+    box-sizing: border-box;
+    padding: 16px;
+  }
+
+  .total .total_size {
+    position: absolute;
+    right: 100px;
+    width: 100px;
+    padding: 0 16px;
+  }
+
+  .ant-table-tbody {
+    display: none !important;
+  }
+
+  .tree-container {
+    min-width: 700px;
+  }
+
+  // reset antdesgin style
+  .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    font-weight: bold;
+  }
+
+  .ant-tabs {
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-foreground);
+  }
+
+  .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--vscode-panelTitle-activeForeground);
+  }
+
+  .ant-tabs-ink-bar {
+    background: var(--vscode-panelTitle-activeBorder);
+  }
+
+  .ant-tabs-bottom>.ant-tabs-nav:before,
+  .ant-tabs-bottom>div>.ant-tabs-nav:before,
+  .ant-tabs-top>.ant-tabs-nav:before,
+  .ant-tabs-top>div>.ant-tabs-nav:before {
+    border-color: var(--vscode-settings-dropdownListBorder)
+  }
+
+  .ant-table {
+    background: var(--vscode-editor-background);
+    color: var(--vscode-foreground);
+  }
+
+  .ant-table-thead>tr>th,
+  .ant-table-thead th.ant-table-column-has-sorters.ant-table-cell-fix-left:hover,
+  .ant-table-thead th.ant-table-column-has-sorters.ant-table-cell-fix-right:hover,
+  .ant-table-thead th.ant-table-column-sort {
+    background: var(--vscode-editor-background);
+    color: var(--vscode-foreground);
+  }
+
+  .ant-tree.ant-tree-directory .ant-tree-treenode:hover:before {
+    background-color: var(--vscode-settings-focusedRowBackground) !important;
+    outline: 1px solid var(--vscode-settings-focusedRowBorder);
+  }
+  .ant-spin-dot-item{
+    background-color: #1890ff!important;
+  }
+}

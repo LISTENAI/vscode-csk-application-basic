@@ -56,10 +56,11 @@ const extensionConfig = {
     //   NICE_FEATURE: JSON.stringify(true),
     //   EXPERIMENTAL_FEATURE: JSON.stringify(false),
     // }),
+
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: './react-app/build',
+          from: './react-app/dist',
           to: './react-app/'
         }
       ]
