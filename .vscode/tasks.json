@@ -35,6 +35,15 @@
 				"npm: watch-tests"
 			],
 			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "build",
+			"path": "react-app",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build - react-app",
+			"detail": "node ./scripts/utils/build.js"
 		}
 	]
 }
