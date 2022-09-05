@@ -139,7 +139,7 @@ class Memory {
     const memoryConfigurationStr = mapfile.substring(mapfile.indexOf('Memory Configuration') + 20, mapfile.indexOf('Linker script and memory map'));
     const memoryConfiguration: IMemoryConfiguration = {};
     memoryConfigurationStr.trim().split('\n').forEach((line, index) => {
-      const match = line.match(/^(\w+)\s+(0x00000000[\da-f]{8})\s+(0x00000000[\da-f]{8})\s+/);
+      const match = line.match(/^(\w+)\s+(0x[0]{0,8}[\da-f]{8})\s+(0x[0]{0,8}[\da-f]{8})\s+/);
       if (match && MEMORY_TYPES.includes(match[1].toLowerCase())) {
         memoryConfiguration[match[1]] = {
           rangeStart: parseInt(match[2], 16).toString(16),
