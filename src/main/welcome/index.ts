@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { WelcomePanel } from './openHome'
-import { cmd } from '../cmd'
 export class Welcome {
     // 打开Home page
     public static async openHomePage(context: vscode.ExtensionContext) {

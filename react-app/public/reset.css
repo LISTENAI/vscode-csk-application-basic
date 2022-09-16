@@ -1,0 +1,297 @@
+/* Copyright (c) 2020 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-1-Clause
+ */
+
+:root {
+    /* From https://microsoft.github.io/vscode-webview-ui-toolkit/?path=/story/library-text-field--with-disabled
+     * Potentially standard for VS Code but not exposed in custom css properties in the webviews as far as I can tell
+     */
+    --disabled-opacity: 0.4;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+#container {
+    height: 100%;
+}
+
+body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-foreground);
+    font-family: var(--vscode-font-family);
+    font-weight: var(--vscode-editor-font-weight);
+    position: absolute;
+    top: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.code {
+    font-family: var(--vscode-editor-font-family) !important;
+}
+
+.clickable {
+    cursor: pointer;
+    opacity: 60%;
+}
+
+.clickable:hover {
+    opacity: 100%;
+}
+
+button {
+    cursor: pointer;
+}
+
+.checkmark {
+    cursor: pointer;
+	display: block;
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	border: solid var(--vscode-checkbox-border);
+	border-width: 1px;
+	border-radius: 3px;
+	flex-shrink: 0;
+}
+
+textarea {
+    box-sizing: border-box;
+    position: relative;
+    color: var(--vscode-input-foreground);
+    background: var(--vscode-input-background);
+    border: 1px solid var(--vscode-dropdown-border);
+    font: inherit;
+    font-size: var(--vscode-font-size);
+    line-height: normal;
+    padding: 8px;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder);
+}
+
+.popup-text {
+    text-decoration: dotted;
+    text-decoration-line: underline;
+    color: var(--vscode-textLink-foreground);
+    cursor: pointer;
+}
+
+.dropdown {
+    cursor: pointer;
+    padding: 5px;
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+
+}
+
+.dropdown > .text {
+    flex-grow: 1;
+}
+
+p {
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+}
+
+input[type=button] {
+    padding: 5px 0;
+    text-align: center;
+    border: none;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    width: 100%;
+    font-size: 12px;
+}
+
+.button--secondary {
+    color: var(--vscode-button-secondaryForeground);
+    background-color: var(--vscode-button-secondaryBackground);
+}
+
+.button--secondary:hover:enabled {
+    background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+input[type=button]:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+input[type="radio"] {
+    appearance: none;
+    color: var(--vscode-foreground);
+    background-color: var(--vscode-checkbox-background);
+    /* Outer border, allowing us to use actual border for the space around the selection mark: */
+    box-shadow: 0 0 0 0.05em var(--vscode-checkbox-border);
+    border-width: 0;
+    border-radius: 50px;
+    width: 11px;
+    height: 11px;
+    cursor: pointer;
+    outline: none;
+}
+
+input > label {
+    cursor: pointer;
+}
+
+input[type="radio"]+label, input[type="checkbox"]+label {
+    cursor: pointer;
+}
+
+input[type="radio"]:not(:checked) {
+    opacity: .7;
+}
+input[type="radio"]:hover {
+    opacity: 1;
+}
+
+input[type="radio"]:checked {
+    background-color: var(--vscode-foreground);
+    border: 3px solid var(--vscode-checkbox-background);
+}
+
+input:disabled {
+    background-color: -internal-light-dark(rgba(239, 239, 239, 0.3), rgba(59, 59, 59, 0.3));
+    border-color: rgba(118, 118, 118, 0.3);
+}
+
+.input-error {
+    border: 1px solid var(--vscode-inputValidation-errorBorder) !important;
+    outline: 0 !important;
+}
+
+select {
+    background-color: var(--vscode-dropdown-background);
+    border: var(--vscode-dropdown-border);
+    color: var(--vscode-dropdown-forground);
+    padding: 10px;
+}
+
+select:disabled {
+    cursor: default;
+}
+
+select>option {
+    font-size: var(--vscode-editor-font-size);
+    background-color: var(--vscode-dropdown-listBackground);
+    color: var(--vscode-dropdown-foreground);
+}
+
+.checkboxes {
+    display: flex;
+    align-items: center;
+    /* flex-direction: column; */
+}
+.highlight:hover {
+    background-color: var(--vscode-settings-focusedRowBackground);
+}
+
+::placeholder {
+    color: var(--vscode-button-primaryForeground);
+    opacity: 0.9;
+}
+
+.flex {
+    display: flex;
+}
+
+.space-evenly {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.space-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.align-center {
+    display: flex;
+    align-items: center;
+}
+
+.flex-direction-col {
+    flex-direction: column;
+}
+
+button {
+    opacity: 100%;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    padding: 4px;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    /* font-size: 16px; */
+    font-family: var(--vscode-font-family);
+}
+
+button:disabled {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+}
+
+button:hover:enabled {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.show {
+    display: block;
+}
+
+.hide {
+    display: none;
+}
+
+.darkener {
+    pointer-events: none;
+    opacity: var(--disabled-opacity);
+    z-index: 1;
+}
+
+.mt-10 {
+    margin-top: 10px
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.no-padding {
+    padding-left: 0 !important;
+    padding-top: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.mt-0 {
+    margin-top: 0 !important;
+}
+
+#check-show-all-boards {
+    margin-top: -5px;
+}
+
+.italic {
+    font-style: italic;
+}

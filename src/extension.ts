@@ -5,11 +5,12 @@ import { ReactPanel } from './main/report'
 
 import NodeProvider from './main/cskMenu';
 import { Welcome } from './main/welcome';
+import { CreatePanel } from './main/application';
 
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 	let _generating = false;
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
@@ -19,13 +20,10 @@ export function activate(context: vscode.ExtensionContext) {
 		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
 	const CskMenuProvider = new NodeProvider();
-	
+	await CskMenuProvider.getSDKInfo();
 	vscode.window.registerTreeDataProvider('csk.menu', CskMenuProvider);
-
 	vscode.commands.registerCommand('csk.refreshMenu', async () => {
-		// const res = await NodeProvider.reloadBasicInfo();
-		// console.log(res)
-		 CskMenuProvider.refresh()
+		await CskMenuProvider.refresh()
 	});
 
 	let welcome = vscode.commands.registerCommand('csk-application-basic.welcome', async () => {
@@ -36,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 		await Welcome.openApplication()
 	})
 	let createApplication = vscode.commands.registerCommand('csk-application-basic.create-application', async () => {
-		await Welcome.createApplication()
+		await CreatePanel.createOrShow(context.extensionPath)
 	})
 	let getZepInfo = vscode.commands.registerCommand('csk-application-basic.info', async () => {
 		await Welcome.getZepInfo()
@@ -50,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		_generating = true;
-		await ReactPanel.showLoading(context.extensionPath);
+		await ReactPanel.createOrShow(context.extensionPath);
 		_generating = false;
 	});
 

@@ -11,9 +11,9 @@
     "Other"
   ],
   "activationEvents": [
-      "onView:csk.menu",
-      "onCommand:csk-application-basic.memory-report",
-      "onCommand:csk-application-basic.welcome"
+    "onView:csk.menu",
+    "onCommand:csk-application-basic.memory-report",
+    "onCommand:csk-application-basic.welcome"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -29,7 +29,7 @@
       {
         "command": "csk.refreshMenu",
         "title": "Csk Menu Refresh",
-          "icon": "$(refresh)"
+        "icon": "$(refresh)"
       },
       {
         "command": "csk-application-basic.open-application",
@@ -109,6 +109,7 @@
   },
   "dependencies": {
     "execa": "^6.1.0",
-    "fs-extra": "^10.1.0"
+    "fs-extra": "^10.1.0",
+    "simple-git": "^3.14.0"
   }
 }

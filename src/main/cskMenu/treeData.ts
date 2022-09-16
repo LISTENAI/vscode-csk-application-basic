@@ -78,48 +78,7 @@ export const soureData = [
                     title: ''
                 },
                 iconPath: '',
-                children: [
-                    {
-                        label: '本机路径：',
-                        tooltip: 'xxxxxx',
-                        command: {
-                            arguments: [],
-                            command: 'csk-application-basic.welcome',
-                            title: ''
-                        },
-                        iconPath: '',
-                    },
-                    {
-                        label: 'git remote：',
-                        tooltip: '',
-                        command: {
-                            arguments: [],
-                            command: 'csk-application-basic.open-application',
-                            title: ''
-                        },
-                        iconPath: '',
-                    },
-                    {
-                        label: '版本：',
-                        tooltip: '',
-                        command: {
-                            arguments: [],
-                            command: 'csk-application-basic.welcome',
-                            title: ''
-                        },
-                        iconPath: '',
-                    },
-                    {
-                        label: 'commit：',
-                        tooltip: '',
-                        command: {
-                            arguments: [],
-                            command: 'csk-application-basic.welcome',
-                            title: ''
-                        },
-                        iconPath: '',
-                    }
-                ]
+                children:[]
             },
             {
                 label: 'action',
