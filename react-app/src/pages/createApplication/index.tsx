@@ -3,15 +3,13 @@ import ReactDom from 'react-dom'
 import './index.less'
 import { Button, Form, Input, Row, Col, Select, ConfigProvider } from 'antd'
 const { Option } = Select
-import { postMessage} from '../../../utils'
-interface Smaple {
-  name: string
-  value: string
-}
+import { postMessage } from '../../../utils'
 const CreateApplication: React.FC = () => {
   const [form] = Form.useForm()
-  const smapleValue = Form.useWatch('smaple', form)
-  const [smaple, setSmaple] = useState<Smaple[]>([])
+  const sampleValue = Form.useWatch('sample', form)
+  const [sample, setSample] = useState<string[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+
   const getStyle = (str: string) => {
     return window.getComputedStyle(document.documentElement).getPropertyValue(str)
   }
@@ -20,17 +18,20 @@ const CreateApplication: React.FC = () => {
     console.log('message', message)
     switch (message.type) {
       case 'openFolder':
-        const { path, fsPath } = message.data
-        console.log(path, fsPath)
+        const {fsPath } = message.data
         form.setFieldsValue({ path: fsPath })
         form.validateFields(['path'])
-        break;
-      case 'getSmaples':
-        setSmaple(message.data)
+        break
+      case 'getSamples':
+        setSample(message.data)
+        break
+      case 'createDone':
+        setLoading(false)
+        break
     }
   }
-  
-  const checkPath = (_rule, value, callback) => {
+
+  const checkPath = (_rule: any, value: string, callback: (arg0?: Error | undefined) => void) => {
     if (value && /\s/g.test(value)) {
       callback(new Error('不支持带有空格的路径'))
     }
@@ -40,11 +41,11 @@ const CreateApplication: React.FC = () => {
     postMessage('openFolder')
   }
   const onFinish = (values: any) => {
-    console.log('Success:', values)
-     postMessage('createApplication', values)
+    setLoading(true)
+    postMessage('createApplication', values)
   }
   const preview = () => {
-    postMessage('showRst', smapleValue)
+    postMessage('openSampleReadme', sampleValue)
   }
   const formItemLayout = {
     labelCol: {
@@ -113,23 +114,21 @@ const CreateApplication: React.FC = () => {
                 <Row gutter={6}>
                   <Col span={18}>
                     <Form.Item
-                      name='smaple'
+                      name='sample'
                       noStyle
-                      rules={[{ required: true, message: '请选择应用目录' }]}
+                      rules={[{ required: true, message: '请选择应用模板' }]}
                     >
-                      <Select placeholder='' allowClear>
-                        {smaple.map((item, key) => {
-                          ;<Option key={key} value={item.value}>
-                            {item.name}
+                      <Select placeholder='' allowClear showSearch>
+                        {sample.map((item, key) => (
+                          <Option key={key} value={item}>
+                            {item}
                           </Option>
-                        })}
-                        <Option value='female'>female</Option>
-                        <Option value='other'>other</Option>
+                        ))}
                       </Select>
                     </Form.Item>
                   </Col>
                   <Col span={6}>
-                    <Button block onClick={preview} disabled={!smapleValue}>
+                    <Button block onClick={preview} disabled={!sampleValue}>
                       预览
                     </Button>
                   </Col>
@@ -143,10 +142,15 @@ const CreateApplication: React.FC = () => {
               >
                 <Input />
               </Form.Item>
-              <Form.Item wrapperCol={{ offset: 18, span: 6 }}>
-                <Button  htmlType='submit' block className='confirm-button'>
-                  创建应用
-                </Button>
+              <Form.Item>
+                <Row gutter={6}>
+                  <Col span={18}></Col>
+                  <Col span={6}>
+                    <Button htmlType='submit' block className='confirm-button' loading={loading}>
+                      创建应用
+                    </Button>
+                  </Col>
+                </Row>
               </Form.Item>
             </Form>
           </div>

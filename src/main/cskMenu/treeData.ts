@@ -1,12 +1,15 @@
 import * as vscode from 'vscode';
 
 export interface TreeDataModel {
-    label: string;
+    label?: string;
     tooltip?: string;
+    isFile?: boolean;
     iconPath?: string;
     description?: string;
     children?: Array<TreeDataModel>;
     command?: vscode.Command;
+    uri?: vscode.Uri,
+    type?:any
 }
 export const soureData = [
     {
@@ -90,56 +93,70 @@ export const soureData = [
                         tooltip: 'update sdk',
                         command: {
                             arguments: [],
-                            command: '',
+                            command: 'csk-application-basic.update-sdk',
                             title: ''
                         },
                         iconPath: 'arrow-up',
                     }
                 ]
             },
-            {
-                label: 'manifest dependencies',
-                tooltip: '',
-                command: {
-                    arguments: [],
-                    command: '',
-                    title: '',
+            // {
+            //     label: 'manifest dependencies',
+            //     tooltip: '',
+            //     command: {
+            //         arguments: [],
+            //         command: '',
+            //         title: '',
 
-                },
-                iconPath: '',
-                children: [
-                    {
-                        label: 'add',
-                        tooltip: 'add manifest dependencies',
-                        command: {
-                            arguments: [],
-                            command: '',
-                            title: ''
-                        },
-                        iconPath: 'add',
-                    },
-                    {
-                        label: 'remove',
-                        tooltip: 'remove manifest dependencies',
-                        command: {
-                            arguments: [],
-                            command: '',
-                            title: ''
-                        },
-                        iconPath: 'trash',
-                    }
-                ]
-            },
+            //     },
+            //     iconPath: '',
+            //     children: [
+            //         {
+            //             label: 'add',
+            //             tooltip: 'add manifest dependencies',
+            //             command: {
+            //                 arguments: [],
+            //                 command: '',
+            //                 title: ''
+            //             },
+            //             iconPath: 'add',
+            //         },
+            //         {
+            //             label: 'remove',
+            //             tooltip: 'remove manifest dependencies',
+            //             command: {
+            //                 arguments: [],
+            //                 command: '',
+            //                 title: ''
+            //             },
+            //             iconPath: 'trash',
+            //         }
+            //     ]
+            // },
             {
                 label: 'source code',
                 tooltip: '',
+                isFile:true,
                 command: {
                     arguments: [],
                     command: '',
                     title: ''
                 },
-                iconPath: ''
+                iconPath: '',
+                children: [
+                    {
+                        label: 'test',
+                        tooltip: '',
+                        command: {
+                            arguments: [],
+                            command: '',
+                            title: ''
+                        },
+                        iconPath: 'settings-gear',
+                    },
+                ]
             }
+          
         ]
     },
     {

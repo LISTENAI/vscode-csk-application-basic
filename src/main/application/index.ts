@@ -75,8 +75,24 @@ export class CreatePanel {
                     });
                     break;
                 case 'getSamples':
-                    await Application.getSmaples();
+                    const res = await Application.getSmaples() ;
+                    self._panel.webview.postMessage({
+                        type: "getSamples",
+                        data: res
+                    });
                     break;
+                case 'openSampleReadme':
+                    Application.showSmaples(message.data);
+                    break;
+                case 'createApplication':
+                    const msg:string =  await Application.createSample(message.data);
+                    self._panel.webview.postMessage({
+                        type: "createDone",
+                        data: ''
+                    });
+                    vscode.window.showInformationMessage(msg)
+                    break;
+                    
                 default:
                     return
 
@@ -110,11 +126,13 @@ export class CreatePanel {
     }
 
     public dispose() {
+        console.log('dispose=====>', Application.createProcess)
+        Application.createProcess && Application.createProcess.kill('SIGTERM', {
+            forceKillAfterTimeout: 1000
+        });
         CreatePanel.currentPanel = undefined;
-
         // Clean up our resources
         this._panel.dispose();
-
         while (this._disposables.length) {
             const x = this._disposables.pop();
             if (x) {

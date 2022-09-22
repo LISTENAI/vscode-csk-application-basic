@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import { join } from 'path';
 import { homedir } from 'os';
 import { pathExists, readJson } from 'fs-extra';
-import { getCommit, getBranch, clean ,getRemote,getTag} from '../../utils/repo';
+import { getCommit, clean ,getRemote,getTag} from '../../utils/repo';
 import simpleGit from "simple-git";
+import { FileExplorer } from './fileExploer';
 export const PLUGIN_HOME = (process.env.LISA_HOME && join(process.env.LISA_HOME, 'lisa-zephyr')) || join(homedir(), '.listenai', 'lisa-zephyr');
 const CONFIG_FILE = join(PLUGIN_HOME, 'config.json');
 interface IPluginConfig {
@@ -52,6 +53,18 @@ export class SDK {
         }
     }
     static update() {
-        
+        const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
+        console.log(terminals)
+        const items: vscode.Terminal | undefined = terminals.find(t =>
+            t.name === 'sdk Terminal'
+        );
+        items && items.dispose()
+        let terminal = vscode.window.createTerminal(`sdk Terminal`);
+        terminal.show(true);
+        terminal.sendText('lisa zep use-sdk  --update')
     }
+    static file(context: vscode.ExtensionContext) {
+      return  new FileExplorer(context);
+    }
+    
 }

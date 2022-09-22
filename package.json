@@ -2,8 +2,13 @@
   "name": "csk-application-basic",
   "displayName": "CSK Application Develop Plugin",
   "description": "VSCode extension for CSK Application Develop Tool.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "listenai",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LISTENAI/vscode-csk-application-basic.git"
+  },
   "engines": {
     "vscode": "^1.70.0"
   },
@@ -16,6 +21,9 @@
     "onCommand:csk-application-basic.welcome"
   ],
   "main": "./dist/extension.js",
+  "extensionPack": [
+    "tht13.rst-vscode"
+  ],
   "contributes": {
     "commands": [
       {
@@ -46,6 +54,19 @@
       {
         "command": "csk-application-basic.info",
         "title": "本机开发信息"
+      },
+      {
+        "command": "csk-application-basic.update-sdk",
+        "title": "更新SDK"
+      },
+      {
+        "command": "sdk.refreshSource",
+        "title": "Sdk Source Code Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "fileExplorer.openFile",
+        "title": "openFile"
       }
     ],
     "viewsContainers": {
@@ -53,7 +74,7 @@
         {
           "id": "csk",
           "title": "csk application",
-          "icon": "./assets/Icon_commands.svg"
+          "icon": "./assets/lb_develop_plugin.svg"
         }
       ]
     },
@@ -90,7 +111,6 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
-    "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "^16.11.49",
     "@types/vscode": "^1.70.0",
@@ -99,7 +119,6 @@
     "@vscode/test-electron": "^2.1.5",
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.20.0",
-    "glob": "^8.0.3",
     "json-loader": "^0.5.7",
     "mocha": "^10.0.0",
     "ts-loader": "^9.3.1",
@@ -108,8 +127,11 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
+    "@types/glob": "^7.2.0",
     "execa": "^6.1.0",
     "fs-extra": "^10.1.0",
-    "simple-git": "^3.14.0"
+    "glob": "^7.2.0",
+    "simple-git": "^3.14.0",
+    "vsce": "^2.11.0"
   }
 }

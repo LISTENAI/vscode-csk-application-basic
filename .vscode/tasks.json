@@ -35,7 +35,14 @@
 				"npm: watch-tests"
 			],
 			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "compile-tests",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: compile-tests",
+			"detail": "tsc -p . --outDir out"
 		}
-
 	]
 }
