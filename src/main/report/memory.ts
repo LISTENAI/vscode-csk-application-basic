@@ -97,7 +97,10 @@ class Memory {
 
     const md5 = hash.digest('hex');
     const LISA_HOME = process.env.LISA_HOME ?? join(homedir(), '.listenai');
-    const gccPrefix = join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-9', 'binary', 'bin');
+
+    const gccPrefix = await pathExists(join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-10.3', 'binary', 'bin')) ? 
+      join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-10.3', 'binary', 'bin') : 
+      join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-9', 'binary', 'bin');
 
     const memoryData: {
       [key: string]: Array<IMemorySymbol>
