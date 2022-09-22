@@ -1,41 +1,40 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { pathExists } from 'fs-extra';
-
-import memory from './memory';
 /**
  * Manages react webview panels
  */
-export class ReactPanel {
+export class CreatePanel {
     /**
      * Track the currently panel. Only allow a single panel to exist at a time.
      */
-    public static currentPanel: ReactPanel | undefined;
+    public static currentPanel: CreatePanel | undefined;
 
     private static readonly viewType = 'react';
 
-    private readonly _panel: vscode.WebviewPanel;
+     _panel: vscode.WebviewPanel;
     private readonly _extensionPath: string;
+    private readonly _assetName: string;
     private readonly _buildPath: string;
     private readonly _reactBuildPath: string;
 
-    private readonly _data: any;
 
-    private _disposables: vscode.Disposable[] = [];
+     _disposables: vscode.Disposable[] = [];
 
-    private constructor(extensionPath: string, column: vscode.ViewColumn,data:any) {
-        this._data = data;
+     constructor(extensionPath: string, column: vscode.ViewColumn,title:string,assetName:string) {
         this._extensionPath = extensionPath;
+        this._assetName = assetName;
         this._buildPath = path.join(this._extensionPath, 'dist');
         this._reactBuildPath = path.join(this._extensionPath, 'dist', 'react-app');
 
         // Create and show a new webview panel
-        this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Memory Report", column, {
+        this._panel = vscode.window.createWebviewPanel(CreatePanel.viewType, title, column, {
             // Enable javascript in the webview
             enableScripts: true,
 
             // And restric the webview to only loading content from our extension's `media` directory.
             localResourceRoots: [
+                // Only allow the webview to access resources in our extension's media directory
+                vscode.Uri.file(path.join(this._extensionPath, 'assets')),
                 vscode.Uri.file(this._buildPath)
             ]
         });
@@ -47,76 +46,36 @@ export class ReactPanel {
         // This happens when the user closes the panel or when the panel is closed programatically
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         this._panel.onDidChangeViewState((e) => {
+            // this._onViewChange();
         });
 
         // Handle messages from the webview
         this._panel.webview.onDidReceiveMessage(async message => {
             console.log(message)
             switch (message.type) {
-                case 'mounted':
-                     this._panel.webview.postMessage({
-                        type: 'treeData',
-                        data: this._data
-                    });
+                case 'executeCommand':
+                    message.data && vscode.commands.executeCommand(message.data)
                     return
-                case 'openFile':
-                    const { path, line } = message.data;
-                    console.log(path, line)
-                    if (! await pathExists(path)) {
-                        return
-                    }
-                    const lineNum = line - 1 || 0
-                    const options = {
-                        selection: new vscode.Range(new vscode.Position(lineNum, 0), new vscode.Position(lineNum, 0)),
-                        // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
-                        preview: false,
-                        // 显示在第二个编辑器
-                        viewColumn: vscode.ViewColumn.Two
-
-                    };
-                    vscode.window.showTextDocument(vscode.Uri.file(path), options);
-              
-                    return;
+                default:
+                    return
 
             }
         }, null, this._disposables);
 
+        // this._onMount();
     }
 
-    public static async showLoading() {
-        const data: any = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-        }, async (progress) => {
-            progress.report({
-                message: `Generating memory reports ...`,
-            });
-           try {
-               return  await memory.getData();
-            } catch (e) {
-                throw new Error(`${e}`);
-           }
-          
-        })
-        return data;
-        // await this.createOrShow(extensionPath, data)
-    }
 
-    public static async createOrShow(extensionPath: string) {
+    async createOrShow(extensionPath: string, _column: vscode.ViewColumn, title: string, assetName: string) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
-        console.log('vscode createOrShow', column)
         // If we already have a panel, show it.
         // Otherwise, create a new panel.
-        if (ReactPanel.currentPanel) {
-            ReactPanel.currentPanel._panel.reveal(column);
+        if (CreatePanel.currentPanel) {
+            CreatePanel.currentPanel._panel.reveal(column);
         } else {
-            const data = await this.showLoading();
-            ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One, data);
-                ReactPanel.currentPanel._panel.webview.postMessage({
-                type: 'treeData',
-                data: data
-            });
+            CreatePanel.currentPanel = new CreatePanel(extensionPath, column || vscode.ViewColumn.One,title, assetName);
         }
- 
+
     }
 
     public doRefactor() {
@@ -126,7 +85,7 @@ export class ReactPanel {
     }
 
     public dispose() {
-        ReactPanel.currentPanel = undefined;
+        CreatePanel.currentPanel = undefined;
 
         // Clean up our resources
         this._panel.dispose();
@@ -140,10 +99,11 @@ export class ReactPanel {
     }
 
     private _getHtmlForWebview() {
+
         try {
-            const stylePathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'assets', 'report.css'));
+            const stylePathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'assets', `${this._assetName}.css`));
             const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
-            const scriptPathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'js', 'report.js'));
+            const scriptPathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'js', `${this._assetName}.js`));
             const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
             // Use a nonce to whitelist which scripts can be run
             const nonce = getNonce();
@@ -156,6 +116,7 @@ export class ReactPanel {
 				<title>React App</title>
 				<link rel="stylesheet" type="text/css" href="${styleUri}">
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+		
 			</head>
 			<body>
 				<noscript>You need to enable JavaScript to run this app.</noscript>
@@ -173,7 +134,6 @@ export class ReactPanel {
         }
 
     }
-
 
 }
 

@@ -38,12 +38,11 @@
 		},
 		{
 			"type": "npm",
-			"script": "build",
-			"path": "react-app",
+			"script": "compile-tests",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "npm: build - react-app",
-			"detail": "node ./scripts/utils/build.js"
+			"label": "npm: compile-tests",
+			"detail": "tsc -p . --outDir out"
 		}
 	]
 }

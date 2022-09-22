@@ -1,0 +1,131 @@
+@import "antd/dist/antd.min.css";
+@import "../../../public/reset.css";
+
+.ant-form-item-label>label.ant-form-item-required:not(.ant-form-item-required-mark-optional):before {
+    display: none;
+}
+
+.layout {
+    display: grid;
+    height: 100vh
+}
+
+.layout__body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+    overflow-y: auto;
+    overflow-x: hidden
+}
+
+.layout__inner-body {
+    width: 500px;
+    margin-top: 64px
+}
+
+.layout__title {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font-weight: 400;
+    font-size: 28px;
+    color: var(--vscode-foreground);
+    padding-bottom: 0;
+    margin-bottom: 15px
+}
+
+.layout__inner-body p:not(:first-child) {
+    margin-top: 10px
+}
+
+.confirm-button {
+    float: right;
+}
+
+.application-type-explanation {
+    margin: 12px 0;
+}
+
+.ant-form-item-label>label {
+    color: var(--vscode-foreground);
+    font-weight: 600;
+}
+
+.ant-input {
+    color: var(--vscode-settings-dropdownForeground) !important;
+    border-radius: 0 !important;
+    background-color: var(--vscode-settings-dropdownBackground) !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: var(--vscode-settings-dropdownBorder) !important;
+}
+
+.ant-btn {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    padding: 4px;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    font-family: var(--vscode-font-family);
+    border-radius: 0;
+}
+
+.ant-btn[disabled],
+.ant-btn[disabled]:active,
+.ant-btn[disabled]:focus,
+.ant-btn[disabled]:hover {
+    opacity: var(--disabled-opacity);
+    text-shadow: none;
+    box-shadow: none;
+    background-color: var(--vscode-button-hoverBackground);
+    color: var(--vscode-button-foreground);
+}
+
+ant-btn:active,
+.ant-btn:focus,
+.ant-btn:hover {
+    text-decoration: none;
+    background-color: var(--vscode-button-hoverBackground);
+    color: var(--vscode-button-foreground);
+}
+
+.ant-select-selector {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border-radius: 0 !important;
+    background-color: var(--vscode-settings-dropdownBackground) !important;
+    border-color: var(--vscode-settings-dropdownBorder) !important;
+}
+
+.ant-select-arrow .anticon>svg {
+    color: var(--vscode-button-foreground);
+}
+
+.ant-select-dropdown {
+    background-color: var(--vscode-settings-dropdownBackground);
+    color: var(--vscode-button-foreground);
+}
+
+.ant-select-item{
+        background-color: var(--vscode-settings-dropdownBackground) !important;
+        color: var(--vscode-button-foreground);
+}
+.ant-select-clear{
+    background-color: var(--vscode-settings-dropdownBackground);
+        color: var(--vscode-button-foreground);
+}
+.ant-select-clear:hover{
+color: var(--vscode-button-foreground);
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled){
+        color: var(--vscode-button-foreground);
+}
+.ant-select-item-option-active:not(.ant-select-item-option-disabled){
+    background-color: var(--vscode-button-background) !important;
+}
+.ant-empty-small{
+    color:var(--vscode-button-foreground)!important;
+}
