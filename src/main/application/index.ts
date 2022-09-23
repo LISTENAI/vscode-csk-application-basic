@@ -126,7 +126,6 @@ export class CreatePanel {
     }
 
     public dispose() {
-        console.log('dispose=====>', Application.createProcess)
         Application.createProcess && Application.createProcess.kill('SIGTERM', {
             forceKillAfterTimeout: 1000
         });

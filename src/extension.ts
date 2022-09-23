@@ -7,7 +7,6 @@ import NodeProvider from './main/cskMenu';
 import { Welcome } from './main/welcome';
 import { CreatePanel } from './main/application';
 import { SDK } from './main/sdk';
-
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
@@ -22,14 +21,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const CskMenuProvider = new NodeProvider();
 	await CskMenuProvider.getSDKInfo();
-	console.log('csk menu done', (Date.now() - start)/1000 + 's');
-
 	CskMenuProvider.watch();
+
 	vscode.window.registerTreeDataProvider('csk.menu', CskMenuProvider);
 	vscode.commands.registerCommand('csk.refreshMenu', async () => {
 		await CskMenuProvider.refresh();
 	});
-	
+	console.log('csk menu done', (Date.now() - start) / 1000 + 's');
 	vscode.commands.registerCommand('fileExplorer.openFile', (resource) => CskMenuProvider.openResource(resource));
 
 	let welcome = vscode.commands.registerCommand('csk-application-basic.welcome', async () => {
