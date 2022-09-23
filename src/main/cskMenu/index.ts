@@ -4,6 +4,8 @@ import { SDK } from '../sdk'
 import { FileStat } from '../sdk/fileExploer'
 import * as path from 'path';
 import * as fs from 'fs';
+import { Throttle } from '../../utils/throttle'
+
 namespace _ {
 
     function handleResult<T>(resolve: (result: T) => void, reject: (error: Error) => void, error: Error | null | undefined, result: T): void {
@@ -107,8 +109,9 @@ namespace _ {
             fs.unlink(path, error => handleResult(resolve, reject, error, void 0));
         });
     }
-}
 
+}
+let throttle = new Throttle()
 export default class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
 {
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
@@ -116,12 +119,11 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
     data: Array<vscode.TreeItem> = [];
     static data: any;
     private _sdkPath!: string;
-
-    refresh(): void {
-        return this._onDidChangeTreeData.fire();
+    async refresh(): Promise<void> {
+        await this.reloadData();
     }
-
-    async reloadData() {
+    reloadData = async () => {
+        console.log('refresh menu')
         await this.getSDKInfo();
         this._onDidChangeTreeData.fire();
     }
@@ -155,7 +157,7 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
         }
         // const entryFolder = element.entry
         console.log('_sdkPath', this._sdkPath)
-        const entryFolder = this._sdkPath &&  vscode.Uri.parse(this._sdkPath)
+        const entryFolder = this._sdkPath && vscode.Uri.parse(this._sdkPath)
         if (entryFolder) {
             const children = await this.readDirectory(entryFolder);
             children.sort((a, b) => {
@@ -196,10 +198,11 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
 
     watch(): vscode.Disposable {
         const uri = vscode.Uri.parse(this._sdkPath)
-        const watcher = fs.watch(uri.fsPath, { recursive:true}, async (event: string, filename: string | Buffer) => {
-            if (filename && filename.indexOf(path.sep + '.git') === -1) {
-                console.log('fresh')
-                this.refresh()
+        throttle.open()
+        let throttleUse: Function = throttle.use(this.reloadData, 2000, true)
+        const watcher = fs.watch(uri.fsPath, { recursive: true }, async (event: string, filename: string | Buffer) => {
+            if (filename && filename.indexOf('.git') < 0) {
+                throttleUse()
             }
         });
         return { dispose: () => watcher.close() };
@@ -208,7 +211,7 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
     constructor() {
 
     }
-    loadData(treeData: Array<vscode.TreeItem>): any {
+    loadData = (treeData: Array<vscode.TreeItem>): any => {
         const mData: Array<vscode.TreeItem> = [];
         treeData.forEach((model: any) => {
             const childLength = model.children?.length ? model.children?.length : 0;
@@ -234,7 +237,7 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
         });
         return mData
     }
-    async getSDKInfo(): Promise<any> {
+    getSDKInfo = async (): Promise<any> => {
         const res = await SDK.getBasic() || {};
         this._sdkPath = res.path || '';
         soureData.map(item => {
@@ -291,9 +294,9 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
         })
         const data = this.loadData(soureData);
         this.data = data;
-        console.log('done', data);
+        console.log('menu data', data);
     }
-     openResource(resource: vscode.Uri): void {
+    openResource(resource: vscode.Uri): void {
         vscode.window.showTextDocument(resource);
     }
 }
@@ -311,10 +314,10 @@ export class CskTreeItem extends vscode.TreeItem {
     constructor(
         Item: TreeDataModel, public children?: CskTreeItem[]
     ) {
-       
+
         const { label, tooltip, iconPath, command, isFile, type, uri } = Item
         const isCollapsed = type !== undefined ? (type === vscode.FileType.Directory ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None) : (children === undefined ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Collapsed);
-        const labelV:any = label || uri
+        const labelV: any = label || uri
         super(labelV, isCollapsed);
         this.tooltip = tooltip;
         this.isFile = isFile;
@@ -330,5 +333,5 @@ export class CskTreeItem extends vscode.TreeItem {
             this.contextValue = 'file';
         }
     }
-  
+
 }
