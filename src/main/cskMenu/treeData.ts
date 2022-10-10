@@ -182,14 +182,24 @@ export const sourceData = [
                 iconPath: 'settings-gear',
             },
             {
-                label: '产物',
+                label: '编译',
                 tooltip: '',
                 command: {
                     arguments: [],
-                    command: '',
+                    command: 'csk-application-basic.app-build',
                     title: ''
                 },
-                iconPath: '',
+                iconPath: 'rocket'
+            },
+            {
+                label: '烧录',
+                tooltip: '',
+                command: {
+                    arguments: [],
+                    command: 'csk-application-basic.app-flash',
+                    title: ''
+                },
+                iconPath: 'symbol-event',
             }
         ]
     }
