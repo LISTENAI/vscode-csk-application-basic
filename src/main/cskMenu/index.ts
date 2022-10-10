@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { soureData, TreeDataModel } from './treeData';
+import { sourceData, TreeDataModel } from './treeData';
 import { SDK } from '../sdk'
 import { FileStat } from '../sdk/fileExploer'
 import * as path from 'path';
@@ -240,13 +240,13 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
     getSDKInfo = async (): Promise<any> => {
         const res = await SDK.getBasic() || {};
         this._sdkPath = res.path || '';
-        soureData.map(item => {
+        sourceData.map(item => {
             if (item.label === 'SDK') {
                 item.children.map((child: TreeDataModel) => {
                     if (child.label === '基本信息') {
                         child.children = [
                             {
-                                label: `本机路径：(${res.path || ''})`,
+                                label: `本机路径：${res.path || ''}`,
                                 tooltip: '',
                                 command: {
                                     arguments: [],
@@ -256,7 +256,7 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
                                 iconPath: '',
                             },
                             {
-                                label: `git remote：(${res.remote || ''})`,
+                                label: `git remote：${res.remote || ''}`,
                                 tooltip: '',
                                 command: {
                                     arguments: [],
@@ -266,7 +266,7 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
                                 iconPath: '',
                             },
                             {
-                                label: `版本：(${res.version || ''})`,
+                                label: `版本：${res.version || ''}`,
                                 tooltip: '',
                                 command: {
                                     arguments: [],
@@ -276,7 +276,7 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
                                 iconPath: '',
                             },
                             {
-                                label: `commit：(${res.commit || ''})`,
+                                label: `commit：${res.commit || ''}`,
                                 tooltip: '',
                                 command: {
                                     arguments: [],
@@ -292,7 +292,8 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
             }
             return item
         })
-        const data = this.loadData(soureData);
+        console.log(sourceData)
+        const data = this.loadData(sourceData);
         this.data = data;
         console.log('menu data', data);
     }
@@ -303,14 +304,14 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
 
 
 export class CskTreeItem extends vscode.TreeItem {
-    tooltip: string | undefined
-    description: string | undefined
-    iconPath?: vscode.Uri | { light: vscode.Uri; dark: vscode.Uri } | vscode.ThemeIcon
-    command?: vscode.Command
-    isFile?: boolean
-    type?: number
-    uri?: vscode.Uri
-    contextValue?: any
+    tooltip: string | undefined;
+    description: string | undefined;
+    iconPath?: vscode.Uri | { light: vscode.Uri; dark: vscode.Uri } | vscode.ThemeIcon;
+    command?: vscode.Command;
+    isFile?: boolean;
+    type?: number;
+    uri?: vscode.Uri;
+    contextValue?: any;
     constructor(
         Item: TreeDataModel, public children?: CskTreeItem[]
     ) {
@@ -323,11 +324,15 @@ export class CskTreeItem extends vscode.TreeItem {
         this.isFile = isFile;
         this.type = type;
         this.uri = uri;
-        if (tooltip) this.description = tooltip;
-        if (command && typeof command === 'object' && command?.command) {
-            this.command = command
+        if (tooltip) {
+            this.description = tooltip;
         }
-        if (iconPath) this.iconPath = new vscode.ThemeIcon(iconPath);
+        if (command && typeof command === 'object' && command?.command) {
+            this.command = command;
+        }
+        if (iconPath) {
+            this.iconPath = new vscode.ThemeIcon(iconPath);
+        }
         if (type === vscode.FileType.File) {
             this.command = { command: 'fileExplorer.openFile', title: "Open File", arguments: [uri], };
             this.contextValue = 'file';

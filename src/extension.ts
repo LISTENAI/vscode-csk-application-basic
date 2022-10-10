@@ -46,8 +46,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	let openDocument = vscode.commands.registerCommand('csk-application-basic.open-document', () => {
 		 Welcome.openDocument('https://docs.listenai.com/chips/600X/application/getting_start')
 	})
-	let updateSdk = vscode.commands.registerCommand('csk-application-basic.update-sdk', async () => {
+	let updateSdk = vscode.commands.registerCommand('csk-application-basic.sdk-update-manifest', async () => {
 		await SDK.update();
+	})
+	let changeSdkVersion = vscode.commands.registerCommand('csk-application-basic.sdk-change-version', async () => {
+		await SDK.changeVersion();
 	})
 	let report = vscode.commands.registerCommand('csk-application-basic.memory-report', async () => {
 		if (_generating) {
@@ -66,6 +69,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(getZepInfo);
 	context.subscriptions.push(report);
 	context.subscriptions.push(updateSdk);
+	context.subscriptions.push(changeSdkVersion);
 
 	
 
