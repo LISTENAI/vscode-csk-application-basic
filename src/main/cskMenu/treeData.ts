@@ -9,7 +9,7 @@ export interface TreeDataModel {
     children?: Array<TreeDataModel>;
     command?: vscode.Command;
     uri?: vscode.Uri,
-    type?:any
+    type?: any;
 }
 export const soureData = [
     {
@@ -81,19 +81,29 @@ export const soureData = [
                     title: ''
                 },
                 iconPath: '',
-                children:[]
+                children: []
             },
             {
-                label: 'action',
+                label: '操作',
                 tooltip: '',
                 iconPath: '',
                 children: [
                     {
-                        label: 'update',
-                        tooltip: 'update sdk',
+                        label: '更新module依赖',
+                        tooltip: '',
                         command: {
                             arguments: [],
                             command: 'csk-application-basic.update-sdk',
+                            title: ''
+                        },
+                        iconPath: 'arrow-up',
+                    },
+                    {
+                        label: '版本切换',
+                        tooltip: '',
+                        command: {
+                            arguments: [],
+                            command: 'csk-application-basic.checkout-sdk',
                             title: ''
                         },
                         iconPath: 'arrow-up',
@@ -136,7 +146,7 @@ export const soureData = [
             {
                 label: 'source code',
                 tooltip: '',
-                isFile:true,
+                isFile: true,
                 command: {
                     arguments: [],
                     command: '',
@@ -156,34 +166,54 @@ export const soureData = [
                     },
                 ]
             }
-          
+
         ]
     },
-    {
-        label: 'APPLICATION',
-        tooltip: '',
-        children: [
-            {
-                label: '编译配置',
-                tooltip: '',
-                command: {
-                    arguments: [],
-                    command: '',
-                    title: ''
-                },
-                iconPath: 'settings-gear',
-            },
-            {
-                label: '产物',
-                tooltip: '',
-                command: {
-                    arguments: [],
-                    command: '',
-                    title: ''
-                },
-                iconPath: '',
-            }
-        ]
-    }
-]
+    // {
+    //     label: 'APPLICATION',
+    //     tooltip: '',
+    //     children: [
+    //         {
+    //             label: '配置',
+    //             tooltip: '',
+    //             command: {
+    //                 arguments: [],
+    //                 command: '',
+    //                 title: ''
+    //             },
+    //             iconPath: 'settings-gear',
+    //         },
+    //         {
+    //             label: '编译',
+    //             tooltip: '',
+    //             command: {
+    //                 arguments: [],
+    //                 command: '',
+    //                 title: ''
+    //             },
+    //             iconPath: '',
+    //         },
+    //         {
+    //             label: '烧录',
+    //             tooltip: '',
+    //             command: {
+    //                 arguments: [],
+    //                 command: '',
+    //                 title: ''
+    //             },
+    //             iconPath: '',
+    //         },
+    //         {
+    //             label: '内存报告',
+    //             tooltip: '',
+    //             command: {
+    //                 arguments: [],
+    //                 command: '',
+    //                 title: ''
+    //             },
+    //             iconPath: '',
+    //         }
+    //     ]
+    // }
+];
 

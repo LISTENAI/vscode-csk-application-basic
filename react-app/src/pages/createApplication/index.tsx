@@ -3,12 +3,16 @@ import ReactDom from 'react-dom'
 import './index.less'
 import { Button, Form, Input, Row, Col, Select, ConfigProvider } from 'antd'
 const { Option } = Select
-import { postMessage } from '../../../utils'
+import { postMessage, get } from '../../../utils'
 const CreateApplication: React.FC = () => {
   const [form] = Form.useForm()
   const sampleValue = Form.useWatch('sample', form)
-  const [sample, setSample] = useState<string[]>([])
+  const [sample, setSample] = useState<any[]>([])
+  const [basicSample, setBasicSample] = useState<string[]>([])
+  const [aiSampleVal, setAiSampleVal] = useState<any>()
+  const [aiSample, setAiSample] = useState<string[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [hasType, setType] = useState<boolean>(false)
 
   const getStyle = (str: string) => {
     return window.getComputedStyle(document.documentElement).getPropertyValue(str)
@@ -18,12 +22,12 @@ const CreateApplication: React.FC = () => {
     console.log('message', message)
     switch (message.type) {
       case 'openFolder':
-        const {fsPath } = message.data
+        const { fsPath } = message.data
         form.setFieldsValue({ path: fsPath })
         form.validateFields(['path'])
         break
       case 'getSamples':
-        setSample(message.data)
+        setBasicSample(message.data)
         break
       case 'createDone':
         setLoading(false)
@@ -31,9 +35,9 @@ const CreateApplication: React.FC = () => {
     }
   }
 
-  const checkPath = (_rule: any, value: string, callback: (arg0?: Error | undefined) => void) => {
+  const checkPath = (_rule: any, value: string, callback: (arg0?: string | undefined) => void) => {
     if (value && /\s/g.test(value)) {
-      callback(new Error('不支持带有空格的路径'))
+      throw new Error('不支持带有空格的路径')
     }
     callback()
   }
@@ -42,10 +46,35 @@ const CreateApplication: React.FC = () => {
   }
   const onFinish = (values: any) => {
     setLoading(true)
-    postMessage('createApplication', values)
+    const params =
+      aiSampleVal !== ''
+        ? Object.assign(values, { http_url_to_repo: aiSampleVal.http_url_to_repo })
+        : values
+    postMessage('createApplication', params)
   }
   const preview = () => {
-    postMessage('openSampleReadme', sampleValue)
+    postMessage('openSampleReadme', {
+      path: sampleValue,
+      url: aiSampleVal.readme_url || aiSampleVal.http_url_to_repo,
+    })
+  }
+  const getAiSample = async () => {
+    const res: any = await get('https://cloud.listenai.com/api/v4/groups/654/projects')
+    console.log(res)
+    const list: any[] = res.filter((item: any) => item.tag_list.length !== 0) || []
+    setAiSample(res)
+  }
+  const handleTypeChange = (value: string) => {
+    setType(true)
+    form.setFieldsValue({ sample: '' })
+    setAiSampleVal('')
+    value === 'basic' ? setSample(basicSample) : setSample(aiSample)
+  }
+  const handleChange = (value: { value: string; label: React.ReactNode }, option: any) => {
+    const optionItem = option.data && JSON.parse(option.data)
+    option.data ? setAiSampleVal(optionItem) : setAiSampleVal('')
+    form.setFieldsValue({ name: value })
+    
   }
   const formItemLayout = {
     labelCol: {
@@ -63,6 +92,7 @@ const CreateApplication: React.FC = () => {
         primaryColor: getStyle('--vscode-editor-background'),
       },
     })
+    getAiSample()
     postMessage('getSamples')
     window.addEventListener('message', (event: MessageEvent<Message>) => {
       handleMessagesFromExtension(event)
@@ -113,19 +143,31 @@ const CreateApplication: React.FC = () => {
               <Form.Item label='应用模板'>
                 <Row gutter={6}>
                   <Col span={18}>
-                    <Form.Item
-                      name='sample'
-                      noStyle
-                      rules={[{ required: true, message: '请选择应用模板' }]}
-                    >
-                      <Select placeholder='' allowClear showSearch>
-                        {sample.map((item, key) => (
-                          <Option key={key} value={item}>
-                            {item}
-                          </Option>
-                        ))}
+                    <Input.Group compact>
+                      <Select
+                        style={{ width: '40%' }}
+                        placeholder='模板类型'
+                        onChange={handleTypeChange}
+                      >
+                        <Option value='basic'>基础 Samples</Option>
+                        <Option value='ai'>AI Samples</Option>
                       </Select>
-                    </Form.Item>
+                      <Form.Item name='sample' style={{ width: '60%' }}>
+                        <Select
+                          placeholder=''
+                          allowClear
+                          showSearch
+                          onChange={handleChange}
+                          disabled={!hasType}
+                        >
+                          {sample.map((item, key) => (
+                            <Option key={key} value={item.name || item} data={JSON.stringify(item)}>
+                              {item.name || item}
+                            </Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Input.Group>
                   </Col>
                   <Col span={6}>
                     <Button block onClick={preview} disabled={!sampleValue}>

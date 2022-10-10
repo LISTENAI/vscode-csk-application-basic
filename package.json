@@ -69,6 +69,12 @@
         "title": "openFile"
       }
     ],
+    "viewsWelcome": [
+      {
+        "view": "csk.menu",
+        "contents": "No node dependencies found [learn more](https://www.npmjs.com/).\n[Add Dependency](command:csk-application-basic.open-application)"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
