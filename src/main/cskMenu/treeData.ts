@@ -11,7 +11,7 @@ export interface TreeDataModel {
     uri?: vscode.Uri,
     type?:any
 }
-export const soureData = [
+export const sourceData = [
     {
         label: 'WELCOME',
         tooltip: '',
@@ -84,19 +84,27 @@ export const soureData = [
                 children:[]
             },
             {
-                label: 'action',
+                label: '操作',
                 tooltip: '',
                 iconPath: '',
                 children: [
                     {
-                        label: 'update',
-                        tooltip: 'update sdk',
+                        label: '更新module依赖',
                         command: {
                             arguments: [],
-                            command: 'csk-application-basic.update-sdk',
+                            command: 'csk-application-basic.sdk-update-manifest',
                             title: ''
                         },
-                        iconPath: 'arrow-up',
+                        // iconPath: 'arrow-up',
+                    },
+                    {
+                        label: '版本切换',
+                        command: {
+                            arguments: [],
+                            command: 'csk-application-basic.sdk-change-version',
+                            title: ''
+                        },
+                        // iconPath: 'arrow-up',
                     }
                 ]
             },
@@ -134,7 +142,7 @@ export const soureData = [
             //     ]
             // },
             {
-                label: 'source code',
+                label: 'SDK源码',
                 tooltip: '',
                 isFile:true,
                 command: {

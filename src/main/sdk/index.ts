@@ -52,17 +52,31 @@ export class SDK {
             version:tag
         }
     }
+
     static update() {
         const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
-        console.log(terminals)
+        console.log(terminals);
         const items: vscode.Terminal | undefined = terminals.find(t =>
             t.name === 'sdk Terminal'
         );
-        items && items.dispose()
+        items && items.dispose();
         let terminal = vscode.window.createTerminal(`sdk Terminal`);
         terminal.show(true);
-        terminal.sendText('lisa zep use-sdk  --update')
+        terminal.sendText('lisa zep update');
     }
+
+    static changeVersion() {
+        const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
+        console.log(terminals);
+        const items: vscode.Terminal | undefined = terminals.find(t =>
+            t.name === 'sdk Terminal'
+        );
+        items && items.dispose();
+        let terminal = vscode.window.createTerminal(`sdk Terminal`);
+        terminal.show(true);
+        terminal.sendText('lisa zep sdk use');
+    }
+
     static file(context: vscode.ExtensionContext) {
       return  new FileExplorer(context);
     }
