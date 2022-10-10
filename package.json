@@ -64,6 +64,14 @@
         "title": "切换SDK版本"
       },
       {
+        "command": "csk-application-basic.app-build",
+        "title": "csk编译"
+      },
+      {
+        "command": "csk-application-basic.app-flash",
+        "title": "csk烧录"
+      },
+      {
         "command": "sdk.refreshSource",
         "title": "Sdk Source Code Refresh",
         "icon": "$(refresh)"

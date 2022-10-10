@@ -6,7 +6,9 @@ import { ReactPanel } from './main/report'
 import NodeProvider from './main/cskMenu';
 import { Welcome } from './main/welcome';
 import { CreatePanel } from './main/application';
-import { SDK } from './main/sdk';
+// import { SDK } from './main/sdk';
+import { Command } from './main/command';
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
@@ -47,10 +49,16 @@ export async function activate(context: vscode.ExtensionContext) {
 		 Welcome.openDocument('https://docs.listenai.com/chips/600X/application/getting_start')
 	})
 	let updateSdk = vscode.commands.registerCommand('csk-application-basic.sdk-update-manifest', async () => {
-		await SDK.update();
+		await Command.run(`lisa zep update`);
 	})
 	let changeSdkVersion = vscode.commands.registerCommand('csk-application-basic.sdk-change-version', async () => {
-		await SDK.changeVersion();
+		await Command.run(`lisa zep sdk use`);
+	})
+	let appBuild = vscode.commands.registerCommand('csk-application-basic.app-build', async () => {
+		await Command.run(`lisa zep build`);
+	})
+	let appFlash = vscode.commands.registerCommand('csk-application-basic.app-flash', async () => {
+		await Command.run(`lisa zep flash`);
 	})
 	let report = vscode.commands.registerCommand('csk-application-basic.memory-report', async () => {
 		if (_generating) {
