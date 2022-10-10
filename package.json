@@ -2,7 +2,7 @@
   "name": "csk-application-basic",
   "displayName": "CSK Application Develop Plugin",
   "description": "VSCode extension for CSK Application Develop Tool.",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "publisher": "listenai",
   "icon": "icon.png",
   "repository": {
@@ -10,7 +10,7 @@
     "url": "git+https://github.com/LISTENAI/vscode-csk-application-basic.git"
   },
   "engines": {
-    "vscode": "^1.70.0"
+    "vscode": "^1.60.0"
   },
   "categories": [
     "Other"
@@ -56,8 +56,20 @@
         "title": "本机开发信息"
       },
       {
-        "command": "csk-application-basic.update-sdk",
-        "title": "更新SDK"
+        "command": "csk-application-basic.sdk-update-manifest",
+        "title": "更新SDK提货单依赖"
+      },
+      {
+        "command": "csk-application-basic.sdk-change-version",
+        "title": "切换SDK版本"
+      },
+      {
+        "command": "csk-application-basic.app-build",
+        "title": "csk编译"
+      },
+      {
+        "command": "csk-application-basic.app-flash",
+        "title": "csk烧录"
       },
       {
         "command": "sdk.refreshSource",
@@ -119,7 +131,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "^9.1.1",
     "@types/node": "^16.11.49",
-    "@types/vscode": "^1.70.0",
+    "@types/vscode": "^1.60.0",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "@vscode/test-electron": "^2.1.5",

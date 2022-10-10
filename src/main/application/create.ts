@@ -154,12 +154,5 @@ export class Application {
         }
 
     }
-    //编译
-    static  build() {
-        createTerminal('Build', ' lisa zep build');
-    }
-    //烧录
-    static flash() {
-        createTerminal('Flash', ' lisa zep flash');
-    }
+
 }

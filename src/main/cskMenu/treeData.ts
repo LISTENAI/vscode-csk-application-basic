@@ -11,7 +11,7 @@ export interface TreeDataModel {
     uri?: vscode.Uri,
     type?: any;
 }
-export const soureData = [
+export const sourceData = [
     {
         label: 'WELCOME',
         tooltip: '',
@@ -93,20 +93,19 @@ export const soureData = [
                         tooltip: '',
                         command: {
                             arguments: [],
-                            command: 'csk-application-basic.update-sdk',
+                            command: 'csk-application-basic.sdk-update-manifest',
                             title: ''
                         },
                         iconPath: 'arrow-up',
                     },
                     {
                         label: '版本切换',
-                        tooltip: '',
                         command: {
                             arguments: [],
-                            command: 'csk-application-basic.checkout-sdk',
+                            command: 'csk-application-basic.sdk-change-version',
                             title: ''
                         },
-                        iconPath: 'arrow-up',
+                        // iconPath: 'arrow-up',
                     }
                 ]
             },
@@ -144,7 +143,7 @@ export const soureData = [
             //     ]
             // },
             {
-                label: 'source code',
+                label: 'SDK源码',
                 tooltip: '',
                 isFile: true,
                 command: {
@@ -169,51 +168,52 @@ export const soureData = [
 
         ]
     },
-    // {
-    //     label: 'APPLICATION',
-    //     tooltip: '',
-    //     children: [
-    //         {
-    //             label: '配置',
-    //             tooltip: '',
-    //             command: {
-    //                 arguments: [],
-    //                 command: '',
-    //                 title: ''
-    //             },
-    //             iconPath: 'settings-gear',
-    //         },
-    //         {
-    //             label: '编译',
-    //             tooltip: '',
-    //             command: {
-    //                 arguments: [],
-    //                 command: '',
-    //                 title: ''
-    //             },
-    //             iconPath: '',
-    //         },
-    //         {
-    //             label: '烧录',
-    //             tooltip: '',
-    //             command: {
-    //                 arguments: [],
-    //                 command: '',
-    //                 title: ''
-    //             },
-    //             iconPath: '',
-    //         },
-    //         {
-    //             label: '内存报告',
-    //             tooltip: '',
-    //             command: {
-    //                 arguments: [],
-    //                 command: '',
-    //                 title: ''
-    //             },
-    //             iconPath: '',
-    //         }
-    //     ]
-    // }
-];
+ 
+    {
+        label: 'APPLICATION',
+        tooltip: '',
+        children: [
+            {
+                label: '配置',
+                tooltip: '',
+                command: {
+                    arguments: [],
+                    command: '',
+                    title: ''
+                },
+                iconPath: 'settings-gear',
+            },
+            {
+                label: '编译',
+                tooltip: '',
+                command: {
+                    arguments: [],
+                    command: 'csk-application-basic.app-build',
+                    title: ''
+                },
+                iconPath: 'rocket'
+            },
+            {
+                label: '烧录',
+                tooltip: '',
+                command: {
+                    arguments: [],
+                    command: 'csk-application-basic.app-flash',
+                    title: ''
+                },
+                iconPath: 'symbol-event',
+            },
+            {
+                label: '内存报告',
+                tooltip: '',
+                command: {
+                    arguments: [],
+                    command: 'csk-application-basic.memory-report',
+                    title: ''
+                },
+                iconPath: 'symbol-constant',
+            }
+        ]
+    }
+]
 

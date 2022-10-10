@@ -50,19 +50,21 @@ export class SDK {
         const remoteArr = /origin\s(.*)\(fetch\)/g.exec(remoteStr) || [];
         return {
             path: sdk,
-            remote: remoteArr[1] ||'',
+            remote: remoteArr[1] || '',
             commit: commitMsg,
-            version:tag
-        }
+            version: tag
+        };
     }
+
     static update() {
-        createTerminal('Update SDK', 'lisa zep update')
+        createTerminal('SDK', 'lisa zep update');
     }
+
     static file(context: vscode.ExtensionContext) {
-      return  new FileExplorer(context);
+        return new FileExplorer(context);
     }
     static checkout() {
-        createTerminal('Checkout  SDK', 'lisa zep sdk')
+        createTerminal('Checkout  SDK', 'lisa zep sdk');
     }
 
 }

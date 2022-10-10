@@ -71,8 +71,8 @@ const CreateApplication: React.FC = () => {
     value === 'basic' ? setSample(basicSample) : setSample(aiSample)
   }
   const handleChange = (value: { value: string; label: React.ReactNode }, option: any) => {
-    const optionItem = option.data && JSON.parse(option.data)
-    option.data ? setAiSampleVal(optionItem) : setAiSampleVal('')
+    const optionItem = option&&option.data && JSON.parse(option.data)
+    option&&option.data ? setAiSampleVal(optionItem) : setAiSampleVal('')
     form.setFieldsValue({ name: value })
     
   }

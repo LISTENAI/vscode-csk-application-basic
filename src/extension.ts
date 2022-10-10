@@ -6,9 +6,9 @@ import { ReactPanel } from './main/report'
 import NodeProvider from './main/cskMenu';
 import { Welcome } from './main/welcome';
 import { CreatePanel } from './main/application';
-import { Application } from './main/application/create';
 
-import { SDK } from './main/sdk';
+import { Command } from './main/command';
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
@@ -42,24 +42,27 @@ export async function activate(context: vscode.ExtensionContext) {
 	let createApplication = vscode.commands.registerCommand('csk-application-basic.create-application', async () => {
 		await CreatePanel.createOrShow(context.extensionPath);
 	})
-	let buildApplication = vscode.commands.registerCommand('csk-application-basic.build-application', async () => {
-		 Application.build();
-	})
-	let flashApplication = vscode.commands.registerCommand('csk-application-basic.flash-application', async () => {
-		Application.flash();
-	})
+	
 	let getZepInfo = vscode.commands.registerCommand('csk-application-basic.info', async () => {
 		await Welcome.getZepInfo();
 	})
 	let openDocument = vscode.commands.registerCommand('csk-application-basic.open-document', () => {
 		 Welcome.openDocument('https://docs.listenai.com/chips/600X/application/getting_start')
 	})
-	let updateSdk = vscode.commands.registerCommand('csk-application-basic.update-sdk', async () => {
-		await SDK.update();
+	let updateSdk = vscode.commands.registerCommand('csk-application-basic.sdk-update-manifest', async () => {
+		await Command.run('sdk',`lisa zep update`);
 	})
-	let checkoutSdk = vscode.commands.registerCommand('csk-application-basic.checkout-sdk', async () => {
-		await SDK.checkout();
+	let changeSdkVersion = vscode.commands.registerCommand('csk-application-basic.sdk-change-version', async () => {
+		await Command.run('sdk', `lisa zep sdk use`);
+
 	})
+	let appBuild = vscode.commands.registerCommand('csk-application-basic.app-build', async () => {
+		await Command.run('app', `lisa zep build`);
+	})
+	let appFlash = vscode.commands.registerCommand('csk-application-basic.app-flash', async () => {
+		await Command.run('app', `lisa zep flash`);
+	})
+
 	
 	let report = vscode.commands.registerCommand('csk-application-basic.memory-report', async () => {
 		if (_generating) {
@@ -74,13 +77,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(welcome);
 	context.subscriptions.push(openApplication);
 	context.subscriptions.push(createApplication);
-	context.subscriptions.push(buildApplication);
-	context.subscriptions.push(flashApplication);
 	context.subscriptions.push(openDocument);
 	context.subscriptions.push(getZepInfo);
 	context.subscriptions.push(report);
 	context.subscriptions.push(updateSdk);
-	context.subscriptions.push(checkoutSdk);
+	context.subscriptions.push(appBuild);
+	context.subscriptions.push(appFlash);
+	context.subscriptions.push(changeSdkVersion);
+
 	
 
 }
