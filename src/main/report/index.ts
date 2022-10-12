@@ -33,7 +33,7 @@ export class ReactPanel {
         this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "Memory Report", column, {
             // Enable javascript in the webview
             enableScripts: true,
-
+            retainContextWhenHidden: true,
             // And restric the webview to only loading content from our extension's `media` directory.
             localResourceRoots: [
                 vscode.Uri.file(this._buildPath)

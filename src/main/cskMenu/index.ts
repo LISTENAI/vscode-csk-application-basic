@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
-import { sourceData, TreeDataModel } from './treeData';
-import { SDK } from '../sdk'
-import { FileStat } from '../sdk/fileExploer'
+import { TreeDataModel } from './treeData';
+import { SDK } from '../sdk';
+import { FileStat } from '../sdk/fileExploer';
 import * as path from 'path';
 import * as fs from 'fs';
-import { Throttle } from '../../utils/throttle'
+import { pathExists } from 'fs-extra';
+import { Throttle } from '../../utils/throttle';
 
 namespace _ {
 
@@ -16,7 +17,7 @@ namespace _ {
         }
     }
 
-    function massageError(error: Error & { code?: string }): Error {
+    function massageError(error: Error & { code?: string; }): Error {
         if (error.code === 'ENOENT') {
             return vscode.FileSystemError.FileNotFound();
         }
@@ -111,22 +112,73 @@ namespace _ {
     }
 
 }
-let throttle = new Throttle()
-export default class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
+let throttle = new Throttle();
+
+
+export class CskTreeItem extends vscode.TreeItem {
+    tooltip: string | undefined;
+    description: string | undefined;
+    iconPath?: vscode.Uri | { light: vscode.Uri; dark: vscode.Uri; } | vscode.ThemeIcon;
+    command?: vscode.Command;
+    isFile?: boolean;
+    type?: number;
+    uri?: vscode.Uri;
+    contextValue?: any;
+    constructor(
+        Item: TreeDataModel, public children?: CskTreeItem[]
+    ) {
+
+        const { label, tooltip, iconPath, command, isFile, type, uri } = Item;
+        const isCollapsed = type !== undefined ? (type === vscode.FileType.Directory ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None) : (children === undefined ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Collapsed);
+        const labelV: any = label || uri;
+        super(labelV, isCollapsed);
+        this.tooltip = tooltip;
+        this.isFile = isFile;
+        this.type = type;
+        this.uri = uri;
+        if (tooltip) {
+            this.description = tooltip;
+        }
+        if (command && typeof command === 'object' && command?.command) {
+            this.command = command;
+        }
+        if (iconPath && typeof iconPath === 'string') {
+            this.iconPath = new vscode.ThemeIcon(iconPath);
+        }
+        if (typeof iconPath === 'object') {
+            const icon: any = iconPath;
+            this.iconPath = new vscode.ThemeIcon(icon.id || '');
+        }
+
+        if (type === vscode.FileType.File) {
+            this.command = { command: 'fileExplorer.openFile', title: "Open File", arguments: [uri], };
+            this.contextValue = 'file';
+        }
+    }
+
+}
+
+
+export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
 {
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
-    data: Array<vscode.TreeItem> = [];
-    static data: any;
+    data: Array<any> = [];
     private _sdkPath!: string;
+
+    constructor(treeData?: Array<vscode.TreeItem>) {
+        const data = treeData ?  this.loadData(treeData) : [];
+        this.data = data;
+    }
+
     async refresh(): Promise<void> {
         await this.reloadData();
     }
     reloadData = async () => {
-        console.log('refresh menu')
+        console.log('refresh menu');
         await this.getSDKInfo();
         this._onDidChangeTreeData.fire();
-    }
+    };
 
     getTreeItem(element: any): vscode.TreeItem | Thenable<vscode.TreeItem> {
         if (element.type === vscode.FileType.File) {
@@ -140,11 +192,11 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
             return this.data;
         }
         if (element && element.isFile) {
-            element.children = await this.getFileChildren()
+            element.children = await this.getFileChildren();
             return element.children;
         }
         if (element && element.type === 2) {
-            element.children = await this.getFileChildren(element)
+            element.children = await this.getFileChildren(element);
             return element.children;
         }
 
@@ -156,8 +208,8 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
             return children.map(([name, type]) => (new CskTreeItem({ uri: vscode.Uri.file(path.join(element.uri.fsPath, name)), type })));
         }
         // const entryFolder = element.entry
-        console.log('_sdkPath', this._sdkPath)
-        const entryFolder = this._sdkPath && vscode.Uri.parse(this._sdkPath)
+        console.log('_sdkPath', this._sdkPath);
+        const entryFolder = this._sdkPath && vscode.Uri.parse(this._sdkPath);
         if (entryFolder) {
             const children = await this.readDirectory(entryFolder);
             children.sort((a, b) => {
@@ -197,20 +249,19 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
     }
 
     watch(): vscode.Disposable {
-        const uri = vscode.Uri.parse(this._sdkPath)
-        throttle.open()
-        let throttleUse: Function = throttle.use(this.reloadData, 2000, true)
-        const watcher = fs.watch(uri.fsPath, { recursive: true }, async (event: string, filename: string | Buffer) => {
+        if (!this._sdkPath) return { dispose: () => { } };
+        
+        throttle.open();
+        let throttleUse: Function = throttle.use(this.reloadData, 2000, true);
+        const watcher =  fs.watch(this._sdkPath, { recursive: true }, async (event: string, filename: string | Buffer) => {
             if (filename && filename.indexOf('.git') < 0) {
-                throttleUse()
+                throttleUse();
             }
         });
         return { dispose: () => watcher.close() };
     }
 
-    constructor() {
 
-    }
     loadData = (treeData: Array<vscode.TreeItem>): any => {
         const mData: Array<vscode.TreeItem> = [];
         treeData.forEach((model: any) => {
@@ -222,7 +273,7 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
                     var childDataItem = new CskTreeItem(childModel);
                     if (childModelLength > 0) {
                         const childData = this.loadData(childModel.children);
-                        const subChiCldDataItem = new CskTreeItem(childModel, childData)
+                        const subChiCldDataItem = new CskTreeItem(childModel, childData);
                         mChildData.push(subChiCldDataItem);
                     } else {
                         mChildData.push(childDataItem);
@@ -230,113 +281,84 @@ export default class NodeProvider implements vscode.TreeDataProvider<vscode.Tree
 
                 });
                 const childDataItem = new CskTreeItem(model, mChildData);
-                mData.push(childDataItem)
+                mData.push(childDataItem);
             } else {
                 mData.push(new CskTreeItem(model));
             }
         });
-        return mData
-    }
+        console.log('menu data', mData);
+        return mData;
+    };
     getSDKInfo = async (): Promise<any> => {
         const res = await SDK.getBasic() || {};
         this._sdkPath = res.path || '';
-        sourceData.map(item => {
-            if (item.label === 'SDK') {
-                item.children.map((child: TreeDataModel) => {
-                    if (child.label === '基本信息') {
-                        child.children = [
-                            {
-                                label: `本机路径：${res.path || ''}`,
-                                tooltip: '',
-                                command: {
-                                    arguments: [],
-                                    command: '',
-                                    title: ''
-                                },
-                                iconPath: '',
-                            },
-                            {
-                                label: `git remote：${res.remote || ''}`,
-                                tooltip: '',
-                                command: {
-                                    arguments: [],
-                                    command: '',
-                                    title: ''
-                                },
-                                iconPath: '',
-                            },
-                            {
-                                label: `版本：${res.version || ''}`,
-                                tooltip: '',
-                                command: {
-                                    arguments: [],
-                                    command: '',
-                                    title: ''
-                                },
-                                iconPath: '',
-                            },
-                            {
-                                label: `commit：${res.commit || ''}`,
-                                tooltip: '',
-                                command: {
-                                    arguments: [],
-                                    command: '',
-                                    title: ''
-                                },
-                                iconPath: '',
-                            }
-                        ]
+        const sourceData = this.data;
+        sourceData.map((child: TreeDataModel) => {
+            if (child.label === '基本信息') {
+                child.children = [
+                    {
+                        label: `本机路径：${res.path || ''}`,
+                        tooltip: '',
+                        command: {
+                            arguments: [],
+                            command: '',
+                            title: ''
+                        },
+                        iconPath: '',
+                    },
+                    {
+                        label: `git remote：${res.remote || ''}`,
+                        tooltip: '',
+                        command: {
+                            arguments: [],
+                            command: '',
+                            title: ''
+                        },
+                        iconPath: '',
+                    },
+                    {
+                        label: `版本：${res.version || ''}`,
+                        tooltip: '',
+                        command: {
+                            arguments: [],
+                            command: '',
+                            title: ''
+                        },
+                        iconPath: '',
+                    },
+                    {
+                        label: `commit：${res.commit || ''}`,
+                        tooltip: '',
+                        command: {
+                            arguments: [],
+                            command: '',
+                            title: ''
+                        },
+                        iconPath: '',
                     }
-                    return child
-                })
+                ];
             }
-            return item
-        })
-        console.log(sourceData)
+            return child;
+        });
         const data = this.loadData(sourceData);
         this.data = data;
-        console.log('menu data', data);
-    }
-    openResource(resource: vscode.Uri): void {
-        vscode.window.showTextDocument(resource);
-    }
+
+    };
 }
 
-
-export class CskTreeItem extends vscode.TreeItem {
-    tooltip: string | undefined;
-    description: string | undefined;
-    iconPath?: vscode.Uri | { light: vscode.Uri; dark: vscode.Uri } | vscode.ThemeIcon;
-    command?: vscode.Command;
-    isFile?: boolean;
-    type?: number;
-    uri?: vscode.Uri;
-    contextValue?: any;
-    constructor(
-        Item: TreeDataModel, public children?: CskTreeItem[]
-    ) {
-
-        const { label, tooltip, iconPath, command, isFile, type, uri } = Item
-        const isCollapsed = type !== undefined ? (type === vscode.FileType.Directory ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None) : (children === undefined ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Collapsed);
-        const labelV: any = label || uri
-        super(labelV, isCollapsed);
-        this.tooltip = tooltip;
-        this.isFile = isFile;
-        this.type = type;
-        this.uri = uri;
-        if (tooltip) {
-            this.description = tooltip;
-        }
-        if (command && typeof command === 'object' && command?.command) {
-            this.command = command;
-        }
-        if (iconPath) {
-            this.iconPath = new vscode.ThemeIcon(iconPath);
-        }
-        if (type === vscode.FileType.File) {
-            this.command = { command: 'fileExplorer.openFile', title: "Open File", arguments: [uri], };
-            this.contextValue = 'file';
-        }
+export class AppNodeProvider extends NodeProvider {
+    appDir: string ;
+    constructor(appDir: string|undefined) {
+        super();
+        this.appDir = appDir || '';
     }
-
+    init = async (treeData:Array<vscode.TreeItem>) => {
+        if (this.appDir === '') return
+        const hasCmakeFile: boolean = await pathExists(path.join(this.appDir, 'CMakeLists.txt'));
+        const hasPconfFile: boolean = await pathExists(path.join(this.appDir, 'prj.conf'));
+        if (hasCmakeFile || hasPconfFile) {
+            const data = this.loadData(treeData);
+            this.data = data;
+        }
+    };
 }

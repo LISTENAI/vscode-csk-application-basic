@@ -6,7 +6,6 @@ import { createInterface } from 'readline';
 import { once } from "events";
 import { execa } from 'execa';
 import * as glob from "glob";
-import { createTerminal } from '../../utils/terminal';
 
 interface Sample {
     name: string;
@@ -18,14 +17,7 @@ interface Sample {
 interface ISampleList {
     [key: string]: string | ISampleList;
 }
-interface TreeItem {
-    id: any,
-    pId: string,
-    value: string,
-    title: string,
-    isLeaf?: boolean,
-    selectable?: boolean,
-}
+
 export async function path2json(dirParse: Array<string>, json: ISampleList): Promise<ISampleList> {
     if (!dirParse.length) return json;
     const dir = dirParse.shift();
@@ -154,5 +146,51 @@ export class Application {
         }
 
     }
+    //编译
+    public static async buildApp(path: string | undefined) {
+        let board: string = '';
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Building...",
+            cancellable: false,
+        }, async (_progress) => {
+            board = await this.getBoard();
+            console.log('board--->', board);
+            if (!board) {
+                vscode.window.showWarningMessage('暂未设置开发板型', {}, ...["配置"]).then(async () => {
+                    vscode.commands.executeCommand('csk-application-basic.create-application-setting');
+                });
+            } else {
+                try {
+                    await execa('lisa', ['zep', 'build'], {
+                        cwd: path || ''
+                    });
+                    vscode.window.showInformationMessage("编译成功");
+                } catch (error) {
+                    console.log(error);
+                    vscode.window.showErrorMessage("编译失败，请重试");
 
+                }
+
+
+            }
+        });
+
+    }
+    //设置板型
+    public static async setBoard(val: string) {
+        await execa('lisa', ['zep', 'config', 'build.board', val]);
+    };
+    //获取板型
+    public static async getBoard() {
+        const { stdout } = await execa('lisa', ['zep', 'config', 'build.board']);
+        return stdout || '';
+    };
+    //获取板子列表
+    public static async getBoardList() {
+        console.time("getBoards");
+        const { stdout } = await execa('lisa', ['zep', 'boards']);
+        console.timeEnd("getBoards");
+        return stdout || '';
+    };
 }

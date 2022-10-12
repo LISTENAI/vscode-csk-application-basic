@@ -16,7 +16,9 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:csk.menu",
+    "onView:csk.menu.Welcome",
+    "onView:csk.menu.Sdk",
+    "onView:csk.menu.Application",
     "onCommand:csk-application-basic.memory-report",
     "onCommand:csk-application-basic.welcome"
   ],
@@ -46,6 +48,10 @@
       {
         "command": "csk-application-basic.create-application",
         "title": "创建应用项目"
+      },
+      {
+        "command": "csk-application-basic.create-application-setting",
+        "title": "应用项目配置"
       },
       {
         "command": "csk-application-basic.open-document",
@@ -83,8 +89,8 @@
     ],
     "viewsWelcome": [
       {
-        "view": "csk.menu",
-        "contents": "No node dependencies found [learn more](https://www.npmjs.com/).\n[Add Dependency](command:csk-application-basic.open-application)"
+        "view": "csk.menu.Application",
+        "contents": "工作区暂无应用项目，请打开包含应用[程序源](https://docs.listenai.com/chips/600X/application/application_development)的文件夹。\n[打开应用项目](command:csk-application-basic.open-application)"
       }
     ],
     "viewsContainers": {
@@ -99,8 +105,16 @@
     "views": {
       "csk": [
         {
-          "id": "csk.menu",
-          "name": "csk快捷菜单"
+          "id": "csk.menu.Welcome",
+          "name": "WELCOME"
+        },
+        {
+          "id": "csk.menu.Sdk",
+          "name": "SDK"
+        },
+        {
+          "id": "csk.menu.Application",
+          "name": "APPLICATION"
         }
       ]
     },
@@ -108,7 +122,7 @@
       "view/title": [
         {
           "command": "csk.refreshMenu",
-          "when": "view == csk.menu",
+          "when": "view == csk.menu.Sdk",
           "group": "navigation"
         }
       ]

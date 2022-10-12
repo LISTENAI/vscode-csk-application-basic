@@ -60,14 +60,15 @@ const CreateApplication: React.FC = () => {
   }
   const getAiSample = async () => {
     const res: any = await get('https://cloud.listenai.com/api/v4/groups/654/projects')
-    console.log(res)
+    console.log('https://cloud.listenai.com/api/v4/groups/654/projects',res)
     const list: any[] = res.filter((item: any) => item.tag_list.length !== 0) || []
-    setAiSample(res)
+    setAiSample(list)
   }
   const handleTypeChange = (value: string) => {
     setType(true)
-    form.setFieldsValue({ sample: '' })
+    form.setFieldsValue({ sample: '',name:'' })
     setAiSampleVal('')
+
     value === 'basic' ? setSample(basicSample) : setSample(aiSample)
   }
   const handleChange = (value: { value: string; label: React.ReactNode }, option: any) => {
