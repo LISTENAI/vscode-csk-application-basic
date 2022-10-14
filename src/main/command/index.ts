@@ -1,15 +1,7 @@
-import {Terminal, window} from 'vscode';
+import { createTerminal } from '../../utils/terminal';
 
 export class Command {
-  static async run(cmd: string) {
-      const terminals = <Terminal[]>(<any>window).terminals;
-      console.log(terminals);
-      const items: Terminal | undefined = terminals.find(t =>
-          t.name === 'sdk Terminal'
-      );
-      items && items.dispose();
-      let terminal = window.createTerminal(`sdk Terminal`);
-      terminal.show(true);
-      terminal.sendText(cmd);
+  static async run(name:string,cmd: string) {
+    createTerminal(name, cmd)
   }
 }

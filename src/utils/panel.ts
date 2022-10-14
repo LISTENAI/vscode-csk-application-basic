@@ -1,36 +1,37 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+export interface Page{
+    assetsName: string; //打包生成的静态资源名称
+    title: string;//webview标题
+}
+import { CurrentWebviewPanels } from '../extension';
+
 /**
- * Manages react webview panels
+ * @pageData 生成的webview页面数据信息
+ * 
+ * 
  */
 export class CreatePanel {
-    /**
-     * Track the currently panel. Only allow a single panel to exist at a time.
-     */
+   
     public static currentPanel: CreatePanel | undefined;
-
     private static readonly viewType = 'react';
-
-     _panel: vscode.WebviewPanel;
+    public panel: vscode.WebviewPanel;
     private readonly _extensionPath: string;
-    private readonly _assetName: string;
     private readonly _buildPath: string;
     private readonly _reactBuildPath: string;
+    private readonly _pageData: Page;
 
-
-     _disposables: vscode.Disposable[] = [];
-
-     constructor(extensionPath: string, column: vscode.ViewColumn,title:string,assetName:string) {
+    public disposables: vscode.Disposable[] = [];
+    constructor(extensionPath: string, pageData: Page) {
         this._extensionPath = extensionPath;
-        this._assetName = assetName;
         this._buildPath = path.join(this._extensionPath, 'dist');
         this._reactBuildPath = path.join(this._extensionPath, 'dist', 'react-app');
-
-        // Create and show a new webview panel
-        this._panel = vscode.window.createWebviewPanel(CreatePanel.viewType, title, column, {
+        // Create a new webview panel
+        this._pageData = pageData;
+        this.panel = vscode.window.createWebviewPanel(CreatePanel.viewType, pageData.title, 0, {
             // Enable javascript in the webview
             enableScripts: true,
-
+            retainContextWhenHidden: true,
             // And restric the webview to only loading content from our extension's `media` directory.
             localResourceRoots: [
                 // Only allow the webview to access resources in our extension's media directory
@@ -40,70 +41,44 @@ export class CreatePanel {
         });
 
         // Set the webview's initial html content 
-        this._panel.webview.html = this._getHtmlForWebview();
+        this.panel.webview.html = this.getHtmlForWebview(pageData.assetsName);
 
         // Listen for when the panel is disposed
         // This happens when the user closes the panel or when the panel is closed programatically
-        this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-        this._panel.onDidChangeViewState((e) => {
+        this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
+        this.panel.onDidChangeViewState((e) => {
             // this._onViewChange();
         });
-
         // Handle messages from the webview
-        this._panel.webview.onDidReceiveMessage(async message => {
-            console.log(message)
-            switch (message.type) {
-                case 'executeCommand':
-                    message.data && vscode.commands.executeCommand(message.data)
-                    return
-                default:
-                    return
-
-            }
-        }, null, this._disposables);
+     
 
         // this._onMount();
-    }
-
-
-    async createOrShow(extensionPath: string, _column: vscode.ViewColumn, title: string, assetName: string) {
-        const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
-        // If we already have a panel, show it.
-        // Otherwise, create a new panel.
-        if (CreatePanel.currentPanel) {
-            CreatePanel.currentPanel._panel.reveal(column);
-        } else {
-            CreatePanel.currentPanel = new CreatePanel(extensionPath, column || vscode.ViewColumn.One,title, assetName);
-        }
-
-    }
+    } 
 
     public doRefactor() {
         // Send a message to the webview webview.
         // You can send any JSON serializable data.
-        this._panel.webview.postMessage({ command: 'refactor' });
+        this.panel.webview.postMessage({ command: 'refactor' });
     }
 
     public dispose() {
+        CurrentWebviewPanels[this._pageData.assetsName] = null;
         CreatePanel.currentPanel = undefined;
-
         // Clean up our resources
-        this._panel.dispose();
-
-        while (this._disposables.length) {
-            const x = this._disposables.pop();
+        this.panel.dispose();
+        while (this.disposables.length) {
+            const x = this.disposables.pop();
             if (x) {
                 x.dispose();
             }
         }
     }
 
-    private _getHtmlForWebview() {
-
+   getHtmlForWebview(pageName:string) {
         try {
-            const stylePathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'assets', `${this._assetName}.css`));
+            const stylePathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'assets', `${pageName}.css`));
             const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
-            const scriptPathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'js', `${this._assetName}.js`));
+            const scriptPathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'js', `${pageName}.js`));
             const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
             // Use a nonce to whitelist which scripts can be run
             const nonce = getNonce();
@@ -115,7 +90,7 @@ export class CreatePanel {
 				<meta name="theme-color" content="#000000">
 				<title>React App</title>
 				<link rel="stylesheet" type="text/css" href="${styleUri}">
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
 		
 			</head>
 			<body>
@@ -129,7 +104,7 @@ export class CreatePanel {
 			</body>
 			</html>`;
         } catch (error) {
-            console.log(error)
+            console.log(error);
             return '';
         }
 
