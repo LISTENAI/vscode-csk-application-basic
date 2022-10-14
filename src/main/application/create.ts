@@ -6,6 +6,7 @@ import { createInterface } from 'readline';
 import { once } from "events";
 import { execa } from 'execa';
 import * as glob from "glob";
+import { Command } from '../../main/command';
 
 interface Sample {
     name: string;
@@ -162,16 +163,12 @@ export class Application {
                 });
             } else {
                 try {
-                    await execa('lisa', ['zep', 'build'], {
-                        cwd: path || ''
-                    });
-                    vscode.window.showInformationMessage("编译成功");
+                    await Command.run('app', 'lisa zep build');
                 } catch (error) {
                     console.log(error);
                     vscode.window.showErrorMessage("编译失败，请重试");
 
                 }
-
 
             }
         });
@@ -183,8 +180,15 @@ export class Application {
     };
     //获取板型
     public static async getBoard() {
-        const { stdout } = await execa('lisa', ['zep', 'config', 'build.board']);
-        return stdout || '';
+        try {
+            const { stdout } = await execa('lisa', ['zep', 'config', 'build.board']);
+            return stdout || '';
+        } catch (error) {
+            console.log(error);
+            return '';
+
+        }
+
     };
     //获取板子列表
     public static async getBoardList() {
@@ -194,3 +198,4 @@ export class Application {
         return stdout || '';
     };
 }
+//

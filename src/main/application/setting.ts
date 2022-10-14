@@ -14,13 +14,13 @@ export class CreateSettingPanel extends CreatePanel {
         this.panel.webview.onDidReceiveMessage(async message => {
             switch (message.type) {
                 case 'getBoards':
+                    console.log('getBoards--->')
                     const res: string = await Application.getBoardList();
                     const board: string = await Application.getBoard();
-
                     self.panel.webview.postMessage({
                         type: "getBoards",
                         data: {
-                            list: res.split('\r\n'),
+                            list: res.split(/\r?\n/),
                             board: board || ''
                         }
                     });
