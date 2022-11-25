@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import { WelcomePanel } from './openHome';
+// import { WelcomePanel } from './openHome';
 import { pathExists } from 'fs-extra';
 import * as path from 'path';
 export class Welcome {
     // 打开Home page
-    public static async openHomePage(context: vscode.ExtensionContext) {
-        await WelcomePanel.createOrShow(context.extensionPath);
-    }
+    // public static async openHomePage(extensionPath: string, pageData: any) {
+    //     return new WelcomePanel(extensionPath, pageData)
+    // }
     // 打开应用项目
     public static async openApplication() {
         vscode.window.showOpenDialog({

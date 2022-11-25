@@ -2,7 +2,7 @@
   "name": "csk-application-basic",
   "displayName": "CSK Application Develop Plugin",
   "description": "VSCode extension for CSK Application Develop Tool.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "listenai",
   "icon": "icon.png",
   "repository": {

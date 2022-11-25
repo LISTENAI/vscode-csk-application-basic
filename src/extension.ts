@@ -1,14 +1,15 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { ReactPanel } from './main/report';
+import { CreateReportPanel } from './main/report';
 import { sourceData } from './main/cskMenu/treeData';
 import { NodeProvider, AppNodeProvider } from './main/cskMenu';
 import { Welcome } from './main/welcome';
+import { CreateWelcomePanel } from './main/welcome/openHome';
 import { CreateSettingPanel } from './main/application/setting';
 import { CreateAppPanel } from './main/application';
 import { Application } from './main/application/create';
-
+import { CommonPanel } from './utils/panel';
 
 import { Command } from './main/command';
 interface WebviewPanelModel {
@@ -19,9 +20,6 @@ export const CurrentWebviewPanels: WebviewPanelModel = {};
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 	let _generating = false;
-	let AppSettingPanel: any = null;
-	let AppPanel: any = null;
-
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "csk-application-basic" is now active!');
@@ -48,28 +46,18 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.window.showTextDocument(resource);
 	});
 	let welcome = vscode.commands.registerCommand('csk-application-basic.welcome', async () => {
-		await Welcome.openHomePage(context);
+		CommonPanel.generateWebView(CreateWelcomePanel, context.extensionPath, { title: 'WelCome to CSK', assetsName: 'welcome' })
 	});
 
 	let openApplication = vscode.commands.registerCommand('csk-application-basic.open-application', async () => {
 		await Welcome.openApplication();
 	});
 	let createApplication = vscode.commands.registerCommand('csk-application-basic.create-application', async () => {
-		if (CurrentWebviewPanels['createApplication']) {
-			CurrentWebviewPanels['createApplication'].panel.reveal(0);
-		} else {
-			AppPanel = new CreateAppPanel(context.extensionPath, { title: '新建应用', assetsName: 'createApplication' });
-			CurrentWebviewPanels['createApplication'] = AppPanel;
-		}
+		CommonPanel.generateWebView(CreateAppPanel, context.extensionPath, {  title: '新建应用', assetsName: 'createApplication' })
 	});
 	
 	let CreateAppSetting = vscode.commands.registerCommand('csk-application-basic.create-application-setting', async () => {
-		if (CurrentWebviewPanels['applicationSetting']) {
-			CurrentWebviewPanels['applicationSetting'].panel.reveal(0);
-		} else {
-			AppSettingPanel = new CreateSettingPanel(context.extensionPath, { title: '应用配置', assetsName: 'applicationSetting' });
-			CurrentWebviewPanels['applicationSetting'] = AppSettingPanel
-		}
+		CommonPanel.generateWebView(CreateSettingPanel, context.extensionPath, { title: '应用配置', assetsName: 'applicationSetting' })
 	});
 
 	let getZepInfo = vscode.commands.registerCommand('csk-application-basic.info', async () => {
@@ -98,7 +86,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		_generating = true;
-		await ReactPanel.createOrShow(context.extensionPath);
+		CommonPanel.generateWebView(CreateReportPanel, context.extensionPath, { title: 'Memory Report', assetsName: 'report' }, getReportData)
 		_generating = false;
 	});
 
@@ -122,4 +110,8 @@ export async function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() {
 
+}
+async function getReportData() {
+	const ReportPanel = CommonPanel.getWebView('report')
+	ReportPanel && await ReportPanel.sendData();
 }

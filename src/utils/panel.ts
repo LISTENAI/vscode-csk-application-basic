@@ -1,18 +1,20 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-export interface Page{
+interface WebviewPanelModel {
+    [propName: string]: any;
+}
+type Callback = () => void;
+export interface Page {
     assetsName: string; //打包生成的静态资源名称
     title: string;//webview标题
 }
-import { CurrentWebviewPanels } from '../extension';
-
 /**
  * @pageData 生成的webview页面数据信息
  * 
  * 
  */
 export class CreatePanel {
-   
+
     public static currentPanel: CreatePanel | undefined;
     private static readonly viewType = 'react';
     public panel: vscode.WebviewPanel;
@@ -50,10 +52,10 @@ export class CreatePanel {
             // this._onViewChange();
         });
         // Handle messages from the webview
-     
+
 
         // this._onMount();
-    } 
+    }
 
     public doRefactor() {
         // Send a message to the webview webview.
@@ -62,7 +64,7 @@ export class CreatePanel {
     }
 
     public dispose() {
-        CurrentWebviewPanels[this._pageData.assetsName] = null;
+        CommonPanel.delWebView(this._pageData.assetsName);
         CreatePanel.currentPanel = undefined;
         // Clean up our resources
         this.panel.dispose();
@@ -74,12 +76,15 @@ export class CreatePanel {
         }
     }
 
-   getHtmlForWebview(pageName:string) {
+    getHtmlForWebview(pageName: string) {
         try {
             const stylePathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'assets', `${pageName}.css`));
-            const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
+            // const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
+            const styleUri = this.panel.webview.asWebviewUri(stylePathOnDisk);
             const scriptPathOnDisk = vscode.Uri.file(path.join(this._reactBuildPath, 'js', `${pageName}.js`));
-            const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
+            // const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
+            const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
+
             // Use a nonce to whitelist which scripts can be run
             const nonce = getNonce();
             return `<!DOCTYPE html>
@@ -109,7 +114,6 @@ export class CreatePanel {
         }
 
     }
-
 }
 
 function getNonce() {
@@ -119,4 +123,26 @@ function getNonce() {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
+}
+
+
+export class CommonPanel {
+    static readonly WebviewPanels: WebviewPanelModel = {};
+    static generateWebView(CreatePanelFn: any, extensionPath: string, pageData: Page, callback?: Callback) {
+        const name = pageData.assetsName || '';
+        const WebviewPanels = this.WebviewPanels;
+        if (WebviewPanels[name]) {
+            WebviewPanels[name].panel.reveal(0);
+        } else {
+            const WelcomePanel = new CreatePanelFn(extensionPath, pageData);
+            WebviewPanels[name] = WelcomePanel;
+            callback && callback();
+        }
+    }
+    static getWebView(name: string) {
+        return this.WebviewPanels[name] || null;
+    }
+    static delWebView(name: string) {
+        return this.WebviewPanels[name] = null;
+    }
 }
