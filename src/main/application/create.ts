@@ -130,15 +130,17 @@ export class Application {
         try {
             if (http_url_to_repo) {
                 //create from-git
-                console.log(target, http_url_to_repo);
-                subprocess = execa('lisa', ['zep', 'create', target, '--from-git', http_url_to_repo], {
-                    stdio: 'inherit'
+                subprocess = execa('lisa', ['zep', 'create', name, '--from-git', http_url_to_repo], {
+                    stdio: 'inherit',
+                    cwd: path
                 });
             } else {
                 const samplePath = resolve(this.sdk, "samples", sample);
                 //create from smaple
-                subprocess = execa('lisa', ['zep', 'create', target, '--from', samplePath], {
-                    stdio: 'inherit'
+                console.log(`lisa ${['zep', 'create', name, '--from', samplePath].join(' ')}`);
+                subprocess = execa('lisa', ['zep', 'create', name, '--from', samplePath], {
+                    stdio: 'inherit',
+                    cwd: path
                 });
             }
             Application.createProcess = subprocess;

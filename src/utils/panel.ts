@@ -14,7 +14,6 @@ export interface Page {
  * 
  */
 export class CreatePanel {
-
     public static currentPanel: CreatePanel | undefined;
     private static readonly viewType = 'react';
     public panel: vscode.WebviewPanel;

@@ -20,6 +20,9 @@ export const CurrentWebviewPanels: WebviewPanelModel = {};
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 	let _generating = false;
+	let AppSettingPanel: any = null;
+	let AppPanel: any = null;
+
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "csk-application-basic" is now active!');
