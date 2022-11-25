@@ -6,7 +6,7 @@ const baseConfig = require('./webpack.base')
 
 const prodConfig = {
   mode: 'production',
-  devtool: 'source-map',
+  // devtool: 'eval-source-map',
   output: {
     filename: 'js/[name].js',
     path: path.resolve(__dirname, '../dist'),

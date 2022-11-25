@@ -59,6 +59,9 @@ export class Application {
         const env = (await SDK.get("env")) || "";
         const board = (env && env[0]) || "";
         // 查看含有 sample.list 的 board
+        if (!sdk) {
+           return vscode.window.showErrorMessage('请先安装CSK SDK （lisa zep sdk）')
+        }
         const sampleListPath = join(sdk, "samples", "boards", board, "sample.list");
         const sampleListFile = resolve(sampleListPath as string);
         if (!(await pathExists(sampleListFile))) {

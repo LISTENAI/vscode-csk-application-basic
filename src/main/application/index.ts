@@ -64,21 +64,4 @@ export class CreateAppPanel extends CreatePanel {
             }
         }, null, this.disposables);
     }
-    
-    public dispose() {
-        Application.createProcess && Application.createProcess.kill('SIGTERM', {
-            forceKillAfterTimeout: 1000
-        });
-        CurrentWebviewPanels[this.pageData.assetsName] = null;
-        CreatePanel.currentPanel = undefined;
-        // Clean up our resources
-        this.panel.dispose();
-        while (this.disposables.length) {
-            const x = this.disposables.pop();
-            if (x) {
-                x.dispose();
-            }
-        }
-    }
-
 }
