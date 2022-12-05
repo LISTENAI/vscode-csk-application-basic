@@ -79,7 +79,7 @@ const CreateApplication: React.FC = () => {
                 labelAlign='left'
                 className='create-form'
               >
-                <Form.Item label='Borad'>
+                <Form.Item label='Board'>
                   <Form.Item
                     name='board'
                     noStyle
