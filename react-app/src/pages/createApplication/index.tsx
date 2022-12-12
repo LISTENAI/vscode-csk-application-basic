@@ -60,22 +60,21 @@ const CreateApplication: React.FC = () => {
   }
   const getAiSample = async () => {
     const res: any = await get('https://cloud.listenai.com/api/v4/groups/654/projects')
-    console.log('https://cloud.listenai.com/api/v4/groups/654/projects',res)
+    console.log('https://cloud.listenai.com/api/v4/groups/654/projects', res)
     const list: any[] = res.filter((item: any) => item.tag_list.length !== 0) || []
     setAiSample(list)
   }
   const handleTypeChange = (value: string) => {
     setType(true)
-    form.setFieldsValue({ sample: '',name:'' })
+    form.setFieldsValue({ sample: '', name: '' })
     setAiSampleVal('')
 
     value === 'basic' ? setSample(basicSample) : setSample(aiSample)
   }
   const handleChange = (value: { value: string; label: React.ReactNode }, option: any) => {
-    const optionItem = option&&option.data && JSON.parse(option.data)
-    option&&option.data ? setAiSampleVal(optionItem) : setAiSampleVal('')
+    const optionItem = option && option.data && JSON.parse(option.data)
+    option && option.data ? setAiSampleVal(optionItem) : setAiSampleVal('')
     form.setFieldsValue({ name: value })
-    
   }
   const formItemLayout = {
     labelCol: {
@@ -145,15 +144,21 @@ const CreateApplication: React.FC = () => {
                 <Row gutter={6}>
                   <Col span={18}>
                     <Input.Group compact>
-                      <Select
+                      <Form.Item
+                        name='type'
                         style={{ width: '40%' }}
-                        placeholder='模板类型'
-                        onChange={handleTypeChange}
+                        rules={[{ required: true, message: '请选择模板类型' }]}
                       >
-                        <Option value='basic'>基础 Samples</Option>
-                        <Option value='ai'>AI Samples</Option>
-                      </Select>
-                      <Form.Item name='sample' style={{ width: '60%' }}>
+                        <Select placeholder='模板类型' onChange={handleTypeChange}>
+                          <Option value='basic'>基础 Samples</Option>
+                          <Option value='ai'>AI Samples</Option>
+                        </Select>
+                      </Form.Item>
+                      <Form.Item
+                        name='sample'
+                        style={{ width: '60%' }}
+                        rules={[{ required: true, message: '请选择模板' }]}
+                      >
                         <Select
                           placeholder=''
                           allowClear
