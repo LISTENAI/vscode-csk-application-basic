@@ -13,20 +13,18 @@ import { CommonPanel } from './utils/panel';
 
 import { Command } from './main/command';
 interface WebviewPanelModel {
-	[propName: string ]:any;
+	[propName: string]: any;
 }
 export const CurrentWebviewPanels: WebviewPanelModel = {};
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 	let _generating = false;
-	let AppSettingPanel: any = null;
-	let AppPanel: any = null;
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "csk-application-basic" is now active!');
-	console.time("csk-application-basic")
+	console.time("csk-application-basic");
 	const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
 		? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
 
@@ -44,23 +42,23 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('csk.refreshMenu', async () => {
 		await SdkCskMenuProvider.refresh();
 	});
-	console.timeEnd("csk-application-basic")
+	console.timeEnd("csk-application-basic");
 	vscode.commands.registerCommand('fileExplorer.openFile', (resource) => {
 		vscode.window.showTextDocument(resource);
 	});
 	let welcome = vscode.commands.registerCommand('csk-application-basic.welcome', async () => {
-		CommonPanel.generateWebView(CreateWelcomePanel, context.extensionPath, { title: 'WelCome to CSK', assetsName: 'welcome' })
+		CommonPanel.generateWebView(CreateWelcomePanel, context.extensionPath, { title: 'WelCome to CSK', assetsName: 'welcome' });
 	});
 
 	let openApplication = vscode.commands.registerCommand('csk-application-basic.open-application', async () => {
 		await Welcome.openApplication();
 	});
 	let createApplication = vscode.commands.registerCommand('csk-application-basic.create-application', async () => {
-		CommonPanel.generateWebView(CreateAppPanel, context.extensionPath, {  title: '新建应用', assetsName: 'createApplication' })
+		CommonPanel.generateWebView(CreateAppPanel, context.extensionPath, { title: '新建应用', assetsName: 'createApplication' });
 	});
-	
+
 	let CreateAppSetting = vscode.commands.registerCommand('csk-application-basic.create-application-setting', async () => {
-		CommonPanel.generateWebView(CreateSettingPanel, context.extensionPath, { title: '应用配置', assetsName: 'applicationSetting' })
+		CommonPanel.generateWebView(CreateSettingPanel, context.extensionPath, { title: '应用配置', assetsName: 'applicationSetting' });
 	});
 
 	let getZepInfo = vscode.commands.registerCommand('csk-application-basic.info', async () => {
@@ -74,10 +72,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	let changeSdkVersion = vscode.commands.registerCommand('csk-application-basic.sdk-change-version', async () => {
 		await Command.run('sdk', `lisa zep sdk use`);
-
+		setTimeout(async () => {
+			await SdkCskMenuProvider.refresh();
+		}, 5000);
 	});
 	let appBuild = vscode.commands.registerCommand('csk-application-basic.app-build', async () => {
-		await Application.buildApp(rootPath)
+		await Application.buildApp(rootPath);
 	});
 	let appFlash = vscode.commands.registerCommand('csk-application-basic.app-flash', async () => {
 		await Command.run('app', `lisa zep flash`);
@@ -89,7 +89,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		_generating = true;
-		CommonPanel.generateWebView(CreateReportPanel, context.extensionPath, { title: 'Memory Report', assetsName: 'report' }, getReportData)
+		CommonPanel.generateWebView(CreateReportPanel, context.extensionPath, { title: 'Memory Report', assetsName: 'report' }, getReportData);
 		_generating = false;
 	});
 
@@ -115,6 +115,6 @@ export function deactivate() {
 
 }
 async function getReportData() {
-	const ReportPanel = CommonPanel.getWebView('report')
+	const ReportPanel = CommonPanel.getWebView('report');
 	ReportPanel && await ReportPanel.sendData();
 }

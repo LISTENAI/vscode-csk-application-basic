@@ -16,7 +16,7 @@ namespace _ {
         }
     }
 
-    function massageError(error: Error & { code?: string }): Error {
+    function massageError(error: Error & { code?: string; }): Error {
         if (error.code === 'ENOENT') {
             return vscode.FileSystemError.FileNotFound();
         }
@@ -160,11 +160,11 @@ export class FileSystemProvider implements vscode.TreeDataProvider<Entry>, vscod
 
     constructor(entry?: vscode.Uri) {
         this._onDidChangeFile = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
-        this._entry = entry
+        this._entry = entry;
     }
 
     get onDidChangeFile(): vscode.Event<vscode.FileChangeEvent[]> {
-        console.log('change---.')
+        console.log('change---.');
         return this._onDidChangeFile.event;
     }
     refresh(): void {
@@ -172,17 +172,17 @@ export class FileSystemProvider implements vscode.TreeDataProvider<Entry>, vscod
     }
 
     watch(uri: vscode.Uri, options: { recursive: boolean; excludes: string[]; }): vscode.Disposable {
-        console.log('watch', uri.fsPath)
+        console.log('watch', uri.fsPath);
 
         const watcher = fs.watch(uri.fsPath, { recursive: options.recursive }, async (event: string, filename: string | Buffer) => {
             const filepath = path.join(uri.fsPath, _.normalizeNFC(filename.toString()));
             // console.log(filepath, event, uri.with({ path: filepath }), event === 'change' ? vscode.FileChangeType.Changed : await _.exists(filepath) ? vscode.FileChangeType.Created : vscode.FileChangeType.Deleted,)
             // TODO support excludes (using minimatch library?)
             // if ()
-                this._onDidChangeFile.fire([{
-                    type: event === 'change' ? vscode.FileChangeType.Changed : await _.exists(filepath) ? vscode.FileChangeType.Created : vscode.FileChangeType.Deleted,
-                    uri: uri.with({ path: filepath })
-                } as vscode.FileChangeEvent]);
+            this._onDidChangeFile.fire([{
+                type: event === 'change' ? vscode.FileChangeType.Changed : await _.exists(filepath) ? vscode.FileChangeType.Created : vscode.FileChangeType.Deleted,
+                uri: uri.with({ path: filepath })
+            } as vscode.FileChangeEvent]);
         });
 
         return { dispose: () => watcher.close() };
@@ -243,7 +243,7 @@ export class FileSystemProvider implements vscode.TreeDataProvider<Entry>, vscod
     }
 
     delete(uri: vscode.Uri, options: { recursive: boolean; }): void | Thenable<void> {
-        console.log('delete', options.recursive)
+        console.log('delete', options.recursive);
 
         if (options.recursive) {
             return _.rmrf(uri.fsPath);
@@ -253,7 +253,7 @@ export class FileSystemProvider implements vscode.TreeDataProvider<Entry>, vscod
     }
 
     rename(oldUri: vscode.Uri, newUri: vscode.Uri, options: { overwrite: boolean; }): void | Thenable<void> {
-        console.log('rename')
+        console.log('rename');
 
         return this._rename(oldUri, newUri, options);
     }
@@ -279,14 +279,14 @@ export class FileSystemProvider implements vscode.TreeDataProvider<Entry>, vscod
     // tree data provider
 
     async getChildren(element?: Entry): Promise<Entry[]> {
-        console.log('file getChildren', element)
+        console.log('file getChildren', element);
         if (element) {
             const children = await this.readDirectory(element.uri);
             return children.map(([name, type]) => ({ uri: vscode.Uri.file(path.join(element.uri.fsPath, name)), type }));
         }
 
         const workspaceFolder = (vscode.workspace.workspaceFolders ?? []).filter(folder => folder.uri.scheme === 'file')[0];
-        const entryFolder = this._entry || workspaceFolder.uri
+        const entryFolder = this._entry || workspaceFolder.uri;
         if (entryFolder) {
             const children = await this.readDirectory(entryFolder);
             children.sort((a, b) => {
@@ -304,13 +304,13 @@ export class FileSystemProvider implements vscode.TreeDataProvider<Entry>, vscod
     }
 
     getTreeItem(element: Entry): vscode.TreeItem {
-        
+
         const treeItem = new vscode.TreeItem(element.uri, element.type === vscode.FileType.Directory ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
         if (element.type === vscode.FileType.File) {
             treeItem.command = { command: 'fileExplorer.openFile', title: "Open File", arguments: [element.uri], };
             treeItem.contextValue = 'file';
         }
-        console.log('filegetTreeItem', treeItem)
+        console.log('filegetTreeItem', treeItem);
         return treeItem;
     }
 }

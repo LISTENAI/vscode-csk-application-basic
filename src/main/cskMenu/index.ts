@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { pathExists } from 'fs-extra';
 import { Throttle } from '../../utils/throttle';
-
 namespace _ {
 
     function handleResult<T>(resolve: (result: T) => void, reject: (error: Error) => void, error: Error | null | undefined, result: T): void {
@@ -165,9 +164,8 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
     readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
     data: Array<any> = [];
     private _sdkPath!: string;
-
     constructor(treeData?: Array<vscode.TreeItem>) {
-        const data = treeData ?  this.loadData(treeData) : [];
+        const data = treeData ? this.loadData(treeData) : [];
         this.data = data;
     }
 
@@ -178,6 +176,8 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
         console.log('refresh menu');
         await this.getSDKInfo();
         this._onDidChangeTreeData.fire();
+        console.log('refresh menu done');
+
     };
 
     getTreeItem(element: any): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -187,6 +187,7 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
         }
         return element;
     }
+    //首次展开菜单会调用
     async getChildren(element?: any): Promise<vscode.ProviderResult<any>> {
         if (element === undefined) {
             return this.data;
@@ -199,7 +200,6 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
             element.children = await this.getFileChildren(element);
             return element.children;
         }
-
         return element.children;
     }
     async getFileChildren(element?: any) {
@@ -207,8 +207,6 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
             const children = await this.readDirectory(element.uri);
             return children.map(([name, type]) => (new CskTreeItem({ uri: vscode.Uri.file(path.join(element.uri.fsPath, name)), type })));
         }
-        // const entryFolder = element.entry
-        console.log('_sdkPath', this._sdkPath);
         const entryFolder = this._sdkPath && vscode.Uri.parse(this._sdkPath);
         if (entryFolder) {
             const children = await this.readDirectory(entryFolder);
@@ -250,15 +248,27 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
 
     watch(): vscode.Disposable {
         if (!this._sdkPath) return { dispose: () => { } };
-        
         throttle.open();
-        let throttleUse: Function = throttle.use(this.reloadData, 2000, true);
-        const watcher =  fs.watch(this._sdkPath, { recursive: true }, async (event: string, filename: string | Buffer) => {
-            if (filename && filename.indexOf('.git') < 0) {
-                throttleUse();
-            }
+        let throttleUse: Function = throttle.use(this.reloadData, 3000, true);
+        // // const watcher = fs.watch(this._sdkPath, { recursive: true }, async (event: string, filename: string | Buffer) => {
+        // //     console.log('watch filename change1', filename);
+        // //     if (filename && filename.indexOf('.git') < 0) {
+        // //         throttleUse();
+        // //     }
+        // // });
+        const update = (filename: vscode.Uri) => {
+            // if (filename.fsPath && filename.fsPath.indexOf('.git') < 0) {
+            throttleUse();
+            // }
+        };
+        let watcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(this._sdkPath, "*"));
+        watcher.onDidCreate(uri => {
+            update(uri);
         });
-        return { dispose: () => watcher.close() };
+        watcher.onDidChange(uri => { update(uri); }); // listen to files being changed
+        watcher.onDidDelete(uri => { update(uri); }); // listen to files/folders getting deleted
+        return { dispose: () => watcher.dispose() };
     }
 
 
@@ -292,6 +302,7 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
     getSDKInfo = async (): Promise<any> => {
         const res = await SDK.getBasic() || {};
         this._sdkPath = res.path || '';
+        console.log('sdkPath', this._sdkPath);
         const sourceData = this.data;
         sourceData.map((child: TreeDataModel) => {
             if (child.label === '基本信息') {
@@ -347,13 +358,13 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
 }
 
 export class AppNodeProvider extends NodeProvider {
-    appDir: string ;
-    constructor(appDir: string|undefined) {
+    appDir: string;
+    constructor(appDir: string | undefined) {
         super();
         this.appDir = appDir || '';
     }
-    init = async (treeData:Array<vscode.TreeItem>) => {
-        if (this.appDir === '') return
+    init = async (treeData: Array<vscode.TreeItem>) => {
+        if (this.appDir === '') return;
         const hasCmakeFile: boolean = await pathExists(path.join(this.appDir, 'CMakeLists.txt'));
         const hasPconfFile: boolean = await pathExists(path.join(this.appDir, 'prj.conf'));
         if (hasCmakeFile || hasPconfFile) {

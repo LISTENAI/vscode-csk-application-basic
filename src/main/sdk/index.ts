@@ -1,12 +1,9 @@
-import * as vscode from 'vscode';
 import { join } from 'path';
 import { homedir } from 'os';
 import { pathExists, readJson } from 'fs-extra';
 import { getCommit, clean, getRemote, getTag } from '../../utils/repo';
 import { createTerminal } from '../../utils/terminal';
-
 import simpleGit from "simple-git";
-import { FileExplorer } from './fileExploer';
 export const PLUGIN_HOME = (process.env.LISA_HOME && join(process.env.LISA_HOME, 'lisa-zephyr')) || join(homedir(), '.listenai', 'lisa-zephyr');
 const CONFIG_FILE = join(PLUGIN_HOME, 'config.json');
 interface IPluginConfig {
@@ -43,15 +40,15 @@ export class SDK {
         if (!(await pathExists(sdk))) return null;
         const tag = await getTag(sdk);
         const git = simpleGit(sdk);
-        const commit = await getCommit(git);
-        const isClean = await clean(git);
-        const commitMsg = `${commit}${isClean ? "" : "*"}`;
+        const commit = await getCommit(git) + '';
+        // const isClean = await clean(git);
+        // const commitMsg = `${commit}${isClean ? "" : "*"}`;
         const remoteStr = await getRemote(sdk);
         const remoteArr = /origin\s(.*)\(fetch\)/g.exec(remoteStr) || [];
         return {
             path: sdk,
             remote: remoteArr[1] || '',
-            commit: commitMsg,
+            commit,
             version: tag
         };
     }
@@ -60,9 +57,6 @@ export class SDK {
         createTerminal('SDK', 'lisa zep update');
     }
 
-    static file(context: vscode.ExtensionContext) {
-        return new FileExplorer(context);
-    }
     static checkout() {
         createTerminal('Checkout  SDK', 'lisa zep sdk');
     }
