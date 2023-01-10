@@ -1,7 +1,7 @@
-import { createTerminal } from '../../utils/terminal';
+import { createTerminal } from '@/utils/terminal';
 
 export class Command {
-  static async run(name:string,cmd: string) {
-    createTerminal(name, cmd)
+  static async run(name: string, cmd: string) {
+    createTerminal(name, cmd);
   }
 }

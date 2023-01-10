@@ -75,6 +75,7 @@ const CreateApplication: React.FC = () => {
     const optionItem = option && option.data && JSON.parse(option.data)
     option && option.data ? setAiSampleVal(optionItem) : setAiSampleVal('')
     form.setFieldsValue({ name: value })
+    preview()
   }
   const formItemLayout = {
     labelCol: {
@@ -108,7 +109,7 @@ const CreateApplication: React.FC = () => {
         <div className='layout__body'>
           <div className='layout__inner-body'>
             <div className='layout__title'>新建应用向导</div>
-            <p className='application-type-explanation'>创建应用程序需要预装CSK SDK。</p>
+            <p className='application-type-explanation'>* 创建应用程序需要预装CSK SDK。</p>
             <Form
               form={form}
               name='basic'
@@ -142,7 +143,7 @@ const CreateApplication: React.FC = () => {
               </Form.Item>
               <Form.Item label='应用模板'>
                 <Row gutter={6}>
-                  <Col span={18}>
+                  <Col span={24}>
                     <Input.Group compact>
                       <Form.Item
                         name='type'
@@ -175,11 +176,11 @@ const CreateApplication: React.FC = () => {
                       </Form.Item>
                     </Input.Group>
                   </Col>
-                  <Col span={6}>
+                  {/* <Col span={6}>
                     <Button block onClick={preview} disabled={!sampleValue}>
                       预览
                     </Button>
-                  </Col>
+                  </Col> */}
                 </Row>
               </Form.Item>
 

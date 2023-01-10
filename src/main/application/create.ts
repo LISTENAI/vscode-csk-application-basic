@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import { SDK } from '../sdk';
-import { join, parse, resolve, sep } from 'path';
-import { pathExists, createReadStream } from "fs-extra";
+import { join, parse, resolve, sep, normalize } from 'path';
+import { pathExists, createReadStream, readFile } from "fs-extra";
 import { createInterface } from 'readline';
 import { once } from "events";
 import { execa } from 'execa';
 import * as glob from "glob";
-import { Command } from '../../main/command';
-
+import { Command } from '@/main/command';
+import * as yaml from 'js-yaml';
 interface Sample {
     name: string;
     path: string;
@@ -40,7 +40,9 @@ export class Application {
     static str: string;
     static sdk: string;
     static createProcess: any;
-
+    static workspace = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+        ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
+    static runnerYaml: { [key: string]: any; };
     static iterate(obj: { [x: string]: any; }, stack?: string) {
         for (var property in obj) {
             if (typeof obj[property] == "object") {
@@ -54,13 +56,13 @@ export class Application {
     }
     // 打开应用项目
     public static async getSmaples() {
-        const sdk = (await SDK.get("sdk")) || "";
+        const { sdk } = (await SDK.getSDK()) || "";
         this.sdk = sdk;
         const env = (await SDK.get("env")) || "";
         const board = (env && env[0]) || "";
         // 查看含有 sample.list 的 board
         if (!sdk) {
-           return vscode.window.showErrorMessage('请先安装CSK SDK （lisa zep sdk）')
+            return vscode.window.showErrorMessage('请先安装CSK SDK （lisa zep sdk）');
         }
         const sampleListPath = join(sdk, "samples", "boards", board, "sample.list");
         const sampleListFile = resolve(sampleListPath as string);
@@ -179,7 +181,7 @@ export class Application {
         });
 
     }
-    //设置板型
+    //设置默认板型
     public static async setBoard(val: string) {
         await execa('lisa', ['zep', 'config', 'build.board', val]);
     };
@@ -189,18 +191,48 @@ export class Application {
             const { stdout } = await execa('lisa', ['zep', 'config', 'build.board']);
             return stdout || '';
         } catch (error) {
-            console.log(error);
             return '';
+        }
+    };
 
+    //获取板型列表
+    public static async getBoardList() {
+        const { stdout } = await execa('lisa', ['zep', 'boards']);
+        return stdout || '';
+    };
+    //读取runner.yaml
+    public static async getRunnerYamlConfig(runnerYamlFile: string) {
+        if (runnerYamlFile && await pathExists(runnerYamlFile)) {
+            const runnerYaml = (yaml.load(await readFile(runnerYamlFile, 'utf-8'))) as { [key: string]: any; };
+            this.runnerYaml = runnerYaml;
+            return runnerYaml;
+        }
+    }
+    //获取烧录工具
+    public static async getRunner() {
+        try {
+            //如果config.runner的话，返回runner.yaml默认的runner
+            const { stdout } = await execa('lisa', ['zep', 'config', 'flash.runner']);
+            const defaultRunner = this.runnerYaml['flash-runner'];
+            return stdout || defaultRunner;
+        } catch (error) {
+            return '';
         }
 
     };
-    //获取板子列表
-    public static async getBoardList() {
-        console.time("getBoards");
-        const { stdout } = await execa('lisa', ['zep', 'boards']);
-        console.timeEnd("getBoards");
-        return stdout || '';
+    //设置默认烧录工具
+    public static async setRunner(val: string) {
+        await execa('lisa', ['zep', 'config', 'flash.runner', val]);
+    };
+    //获取烧录工具列表
+    //没build的时候 flash -H build configuration返回为空，无法获取runner.yaml
+    public static async getRunnerList() {
+        let { stdout } = await execa('lisa', ['zep', 'flash', '-H'], { cwd: Application.workspace });
+        const reg = /runners\.yaml\:(.*)\r?\n/;
+        const matchstr: Array<string> | null = stdout.match(reg);
+        let runnerYamlFile: string | null = matchstr && matchstr[1];
+        runnerYamlFile = runnerYamlFile?.trim() || '';
+        const runnerConfig = await this.getRunnerYamlConfig(runnerYamlFile);
+        return runnerConfig && runnerConfig.runners || [];
     };
 }
-//

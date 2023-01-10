@@ -19,6 +19,7 @@
     "onView:csk.menu.Welcome",
     "onView:csk.menu.Sdk",
     "onView:csk.menu.Application",
+    "onView:csk.menu.Tools",
     "onCommand:csk-application-basic.memory-report",
     "onCommand:csk-application-basic.welcome"
   ],
@@ -59,7 +60,7 @@
       },
       {
         "command": "csk-application-basic.info",
-        "title": "本机开发信息"
+        "title": "检查开发环境"
       },
       {
         "command": "csk-application-basic.sdk-update-manifest",
@@ -85,6 +86,14 @@
       {
         "command": "fileExplorer.openFile",
         "title": "openFile"
+      },
+      {
+        "command": "csk-application-basic.finder-spd",
+        "title": "头肩视觉预览工具"
+      },
+      {
+        "command": "csk-application-basic.csk-terminal",
+        "title": "csk串口terminal"
       }
     ],
     "viewsWelcome": [
@@ -115,6 +124,10 @@
         {
           "id": "csk.menu.Application",
           "name": "APPLICATION"
+        },
+        {
+          "id": "csk.menu.Tools",
+          "name": "TOOLS"
         }
       ]
     },
@@ -143,6 +156,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
+    "@types/js-yaml": "^4.0.5",
     "@types/mocha": "^9.1.1",
     "@types/node": "^16.11.49",
     "@types/vscode": "^1.60.0",
@@ -163,6 +177,8 @@
     "execa": "^6.1.0",
     "fs-extra": "^10.1.0",
     "glob": "^7.2.0",
+    "iconv-lite": "^0.6.3",
+    "js-yaml": "^4.1.0",
     "simple-git": "^3.14.0",
     "vsce": "^2.11.0"
   }

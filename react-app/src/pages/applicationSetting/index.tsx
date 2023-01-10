@@ -7,7 +7,9 @@ import { postMessage } from '../../../utils'
 const CreateApplication: React.FC = () => {
   const [form] = Form.useForm()
   const [boards, setBoards] = useState<string[]>([])
+  const [runners, setRunners] = useState<string[]>([])
   const [originBoard, setOriginBoard] = useState<string>()
+  const [originRunner, setOriginRunner] = useState<string>()
   const [loading, setLoading] = useState(true)
   const [btnLoading, setBtnLoading] = useState(false)
 
@@ -18,17 +20,22 @@ const CreateApplication: React.FC = () => {
     const message = event.data
     console.log('message', message)
     switch (message.type) {
-      case 'getBoards':
-        const { board, list } = message.data
+      case 'saveApplicationSetting':
+        const { board: boardRes, runner: runnerRes } = message.data
+        setBtnLoading(false)
+        boardRes && setOriginBoard(boardRes)
+        runnerRes && setOriginRunner(runnerRes)
+        boardRes && form.setFieldsValue({ board: boardRes })
+        runnerRes && form.setFieldsValue({ runner: runnerRes })
+        break
+      case 'getSettings':
+        const { runners, list, board, runner } = message.data
+        setRunners(runners)
         setBoards(list)
         setOriginBoard(board)
-        form.setFieldsValue({ board })
+        setOriginRunner(runner)
+        form.setFieldsValue({ board, runner })
         setLoading(false)
-        break
-      case 'saveApplicationSetting':
-        setBtnLoading(false)
-        setOriginBoard(message.data)
-        form.setFieldsValue({ board: message.data })
         break
       default:
         break
@@ -36,20 +43,17 @@ const CreateApplication: React.FC = () => {
   }
 
   const onFinish = (values: any) => {
-    const { board } = values
-    if (board !== originBoard) {
-      showConfirm(values)
-    } else {
-      message.info(`当前应用版型已是${board}`)
-    }
-  }
-  const saveHandle = (values: any) => {
-    setBtnLoading(true)
-    postMessage('saveApplicationSetting', values)
-  }
-  const showConfirm = (values: any) => {
     saveHandle(values)
   }
+  const saveHandle = (values: any) => {
+    const { board, runner } = values
+    let params = {}
+    params = board !== originBoard ? Object.assign(params, { board }) : params
+    params = runner !== originRunner ? Object.assign(params, { runner }) : params
+    setBtnLoading(true)
+    postMessage('saveApplicationSetting', params)
+  }
+
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
@@ -66,7 +70,7 @@ const CreateApplication: React.FC = () => {
         primaryColor: getStyle('--vscode-editor-background'),
       },
     })
-    postMessage('getBoards')
+    postMessage('getSettings')
     window.addEventListener('message', (event: MessageEvent<Message>) => {
       handleMessagesFromExtension(event)
     })
@@ -81,7 +85,7 @@ const CreateApplication: React.FC = () => {
         <div className='layout__body'>
           <div className='layout__inner-body'>
             <div className='layout__title'>应用配置</div>
-            {/* <p className='application-type-explanation'></p> */}
+            <p className='application-type-explanation'>* 配置烧录工具需要存在编译产物。</p>
             <Spin spinning={loading} wrapperClassName='loading-area'>
               <Form
                 form={form}
@@ -93,14 +97,29 @@ const CreateApplication: React.FC = () => {
                 labelAlign='left'
                 className='create-form'
               >
-                <Form.Item label='Board'>
+                <Form.Item label='版型'>
                   <Form.Item
                     name='board'
                     noStyle
                     rules={[{ required: true, message: '请选择应用版型' }]}
                   >
-                    <Select placeholder='' allowClear showSearch>
+                    <Select placeholder='' showSearch>
                       {boards.map((item, key) => (
+                        <Option key={key} value={item}>
+                          {item}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Form.Item>
+                <Form.Item label='烧录工具'>
+                  <Form.Item
+                    name='runner'
+                    noStyle
+                    rules={[{ required: false, message: '请选择烧录工具' }]}
+                  >
+                    <Select placeholder='' allowClear showSearch>
+                      {runners.map((item, key) => (
                         <Option key={key} value={item}>
                           {item}
                         </Option>

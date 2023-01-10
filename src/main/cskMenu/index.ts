@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { TreeDataModel } from './treeData';
+import { TreeDataModel, SourceData } from './treeData';
 import { SDK } from '../sdk';
 import { FileStat } from '../sdk/fileExploer';
 import * as path from 'path';
 import * as fs from 'fs';
 import { pathExists } from 'fs-extra';
-import { Throttle } from '../../utils/throttle';
+import { Throttle } from '@/utils/throttle';
 namespace _ {
 
     function handleResult<T>(resolve: (result: T) => void, reject: (error: Error) => void, error: Error | null | undefined, result: T): void {
@@ -163,8 +163,11 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
     data: Array<any> = [];
+    menuName: string = '';
     private _sdkPath!: string;
-    constructor(treeData?: Array<vscode.TreeItem>) {
+    constructor(menuName: string) {
+        this.menuName = menuName;
+        const treeData = SourceData[menuName];
         const data = treeData ? this.loadData(treeData) : [];
         this.data = data;
     }
@@ -173,10 +176,9 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
         await this.reloadData();
     }
     reloadData = async () => {
-        console.log('refresh menu');
+        console.log(`refresh ${this.menuName} menu`);
         await this.getSDKInfo();
         this._onDidChangeTreeData.fire();
-        console.log('refresh menu done');
 
     };
 
@@ -273,6 +275,7 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
 
 
     loadData = (treeData: Array<vscode.TreeItem>): any => {
+        console.time(`get ${this.menuName} menu data`);
         const mData: Array<vscode.TreeItem> = [];
         treeData.forEach((model: any) => {
             const childLength = model.children?.length ? model.children?.length : 0;
@@ -296,19 +299,19 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
                 mData.push(new CskTreeItem(model));
             }
         });
-        console.log('menu data', mData);
+        console.timeEnd(`get ${this.menuName} menu data`);
         return mData;
     };
     getSDKInfo = async (): Promise<any> => {
         const res = await SDK.getBasic() || {};
         this._sdkPath = res.path || '';
-        console.log('sdkPath', this._sdkPath);
+        console.log('sdkPath', res);
         const sourceData = this.data;
         sourceData.map((child: TreeDataModel) => {
             if (child.label === '基本信息') {
                 child.children = [
                     {
-                        label: `本机路径：${res.path || ''}`,
+                        label: `路径：${res.path || ''}`,
                         tooltip: '',
                         command: {
                             arguments: [],
@@ -349,21 +352,26 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
                     }
                 ];
             }
+            if (child.label === '操作') {
+                if (!res.isGlobalSdk) {
+                    child.children?.pop();
+                }
+            }
             return child;
         });
         const data = this.loadData(sourceData);
         this.data = data;
-
     };
 }
 
 export class AppNodeProvider extends NodeProvider {
     appDir: string;
-    constructor(appDir: string | undefined) {
-        super();
+    constructor(appDir: string | undefined, menuName: string) {
+        super(menuName);
         this.appDir = appDir || '';
     }
-    init = async (treeData: Array<vscode.TreeItem>) => {
+    init = async () => {
+        const treeData = (this.menuName && SourceData[this.menuName]) || [];
         if (this.appDir === '') return;
         const hasCmakeFile: boolean = await pathExists(path.join(this.appDir, 'CMakeLists.txt'));
         const hasPconfFile: boolean = await pathExists(path.join(this.appDir, 'prj.conf'));

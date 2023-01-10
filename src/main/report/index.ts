@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { pathExists } from 'fs-extra';
-import { CreatePanel, Page } from '../../utils/panel';
+import { CreatePanel, Page } from '@/utils/panel';
 import memory from './memory';
 /**
  * Memory Report
@@ -24,6 +24,7 @@ export class CreateReportPanel extends CreatePanel {
                     return;
                 case 'openFile':
                     const { path, line } = message.data;
+                    console.log(path);
                     if (! await pathExists(path)) {
                         return;
                     }

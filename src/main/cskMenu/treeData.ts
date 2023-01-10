@@ -16,7 +16,7 @@ export interface TreeDataModel {
     uri?: vscode.Uri,
     type?: any;
 }
-export const sourceData: TreeModel = {
+export const SourceData: TreeModel = {
     welcome: [
         {
             label: 'Home Page',
@@ -59,7 +59,7 @@ export const sourceData: TreeModel = {
             iconPath: 'globe',
         },
         {
-            label: '本机开发信息',
+            label: '检查开发环境',
             tooltip: '',
             command: {
                 arguments: [],
@@ -94,7 +94,7 @@ export const sourceData: TreeModel = {
                         command: 'csk-application-basic.sdk-update-manifest',
                         title: ''
                     },
-                    iconPath: 'arrow-up',
+                    iconPath: '',
                 },
                 {
                     label: '版本切换',
@@ -173,6 +173,28 @@ export const sourceData: TreeModel = {
             },
             iconPath: 'symbol-constant',
         }
+    ],
+    tools: [
+        {
+            label: 'csk串口Terminal',
+            tooltip: '',
+            command: {
+                arguments: [],
+                command: 'csk-application-basic.csk-terminal',
+                title: ''
+            },
+            iconPath: 'terminal',
+        },
+        {
+            label: '头肩视觉预览',
+            tooltip: '',
+            command: {
+                arguments: [],
+                command: 'csk-application-basic.finder-spd',
+                title: ''
+            },
+            iconPath: 'tools',
+        },
     ]
 };
 

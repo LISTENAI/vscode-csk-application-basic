@@ -1,9 +1,11 @@
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { homedir } from 'os';
 import { pathExists, readJson } from 'fs-extra';
-import { getCommit, clean, getRemote, getTag } from '../../utils/repo';
-import { createTerminal } from '../../utils/terminal';
+import { getCommit, clean, getRemote, getTag } from '@/utils/repo';
+import { createTerminal } from '@/utils/terminal';
 import simpleGit from "simple-git";
+import { execa } from 'execa';
+import * as vscode from 'vscode';
 export const PLUGIN_HOME = (process.env.LISA_HOME && join(process.env.LISA_HOME, 'lisa-zephyr')) || join(homedir(), '.listenai', 'lisa-zephyr');
 const CONFIG_FILE = join(PLUGIN_HOME, 'config.json');
 interface IPluginConfig {
@@ -15,7 +17,7 @@ export interface SdkBasic {
     remote?: string;
     commit?: string;
     version?: string;
-
+    isGlobalSdk?: boolean;
 }
 
 export class SDK {
@@ -32,25 +34,41 @@ export class SDK {
         }
         return config ? config[key] : undefined;
     }
-
-    static async getBasic(): Promise<SdkBasic | null> {
-        const sdk = await this.get('sdk');
-
-        if (!sdk) return null;
-        if (!(await pathExists(sdk))) return null;
-        const tag = await getTag(sdk);
-        const git = simpleGit(sdk);
-        const commit = await getCommit(git) + '';
-        // const isClean = await clean(git);
-        // const commitMsg = `${commit}${isClean ? "" : "*"}`;
-        const remoteStr = await getRemote(sdk);
-        const remoteArr = /origin\s(.*)\(fetch\)/g.exec(remoteStr) || [];
+    static async getSDK(): Promise<{ sdk: string, isGlobalSdk: boolean; }> {
+        const workspace = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+            ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
+        const { stdout } = await execa('lisa', ['zep', 'topdir'], {
+            cwd: workspace
+        });
+        const sdk = resolve(stdout, 'zephyr');
         return {
-            path: sdk,
-            remote: remoteArr[1] || '',
-            commit,
-            version: tag
+            sdk,
+            isGlobalSdk: !!!(workspace && stdout.startsWith(workspace))
         };
+    }
+    static async getBasic(): Promise<SdkBasic | null> {
+        try {
+            let { sdk, isGlobalSdk } = await this.getSDK();
+            if (!sdk) return null;
+            if (!(await pathExists(sdk))) return null;
+            const tag = await getTag(sdk);
+            const git = simpleGit(sdk);
+            const commit = await getCommit(git) + '';
+            // const isClean = await clean(git);
+            // const commitMsg = `${commit}${isClean ? "" : "*"}`;
+            const remoteStr = await getRemote(sdk);
+            const remoteArr = /origin\s(.*)\(fetch\)/g.exec(remoteStr) || [];
+            return {
+                isGlobalSdk,
+                path: sdk,
+                remote: remoteArr[1] || '',
+                commit,
+                version: tag
+            };
+        } catch (error) {
+            throw error;
+        }
+
     }
 
     static update() {

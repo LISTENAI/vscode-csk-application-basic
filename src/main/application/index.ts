@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
-import { Application } from './create'
-import { CreatePanel, Page } from '../../utils/panel';
-import { CurrentWebviewPanels } from '../../extension';
+import { Application } from './create';
+import { CreatePanel, Page } from '@/utils/panel';
 
 /**
  * Application
@@ -9,11 +8,11 @@ import { CurrentWebviewPanels } from '../../extension';
  * 有 CMakeLists.txt 或者 prj.conf文件
  */
 export class CreateAppPanel extends CreatePanel {
-    pageData: any
+    pageData: any;
     constructor(extensionPath: string, pageData: Page) {
-        
+
         super(extensionPath, pageData);
-        this.pageData = pageData
+        this.pageData = pageData;
         const self = this;
         this.panel.webview.onDidReceiveMessage(async message => {
             console.log(message);

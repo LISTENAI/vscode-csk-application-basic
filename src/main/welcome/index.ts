@@ -22,11 +22,11 @@ export class Welcome {
                 if (hasCmakeFile || hasPconfFile) {
                     await vscode.commands.executeCommand('vscode.openFolder', uri);
                 } else {
-                    vscode.window.showWarningMessage(`"${msg[0].path} "该目录不包含application source.`)
+                    vscode.window.showWarningMessage(`"${msg[0].path} "该目录不包含application source.`);
                 }
             }
         });
-        
+
     }
     //创建应用项目
     public static async createApplication() {
@@ -40,14 +40,13 @@ export class Welcome {
         terminal.sendText('lisa zep sdk create');
 
     }
-    // 查看开发文档
+    // 打开网页
     public static openDocument(url: string) {
         vscode.env.openExternal(vscode.Uri.parse(url));
     }
-    // 本机开发信息
+    // 检查开发环境
     public static async getZepInfo() {
         const terminals = <vscode.Terminal[]>(<any>vscode.window).terminals;
-        console.log(terminals);
         const items: vscode.Terminal | undefined = terminals.find(t =>
             t.name === 'lisa Terminal'
         );

@@ -3,7 +3,7 @@ import { join } from 'path';
 import { pathExists, readFile } from 'fs-extra';
 import { createHash } from 'crypto';
 import { homedir } from 'os';
-import exec from '../../utils/exec';
+import exec from '@/utils/exec';
 
 const TYPE_FUNCTION = "function";
 const TYPE_VARIABLE = "variable";
@@ -27,7 +27,7 @@ interface ISymbols {
     'file': string | undefined;
     'line': number | undefined;
     'type': string | undefined;
-  }
+  };
 }
 
 interface IMemoryRange {
@@ -40,7 +40,7 @@ interface IMemoryConfiguration {
 }
 
 const types: {
-  [key: string]: string
+  [key: string]: string;
 } = {
   'T': TYPE_FUNCTION,
   'D': TYPE_VARIABLE,
@@ -98,12 +98,12 @@ class Memory {
     const md5 = hash.digest('hex');
     const LISA_HOME = process.env.LISA_HOME ?? join(homedir(), '.listenai');
 
-    const gccPrefix = await pathExists(join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-10.3', 'binary', 'bin')) ? 
-      join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-10.3', 'binary', 'bin') : 
+    const gccPrefix = await pathExists(join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-10.3', 'binary', 'bin')) ?
+      join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-10.3', 'binary', 'bin') :
       join(LISA_HOME, 'lisa-zephyr', 'packages', 'node_modules', '@binary', 'gcc-arm-none-eabi-9', 'binary', 'bin');
 
     const memoryData: {
-      [key: string]: Array<IMemorySymbol>
+      [key: string]: Array<IMemorySymbol>;
     } = {};
 
 
@@ -127,7 +127,7 @@ class Memory {
     });
 
     const treeData: {
-      [key: string]: IMemorySymbol
+      [key: string]: IMemorySymbol;
     } = {};
 
     for (const memoryType in memoryData) {
