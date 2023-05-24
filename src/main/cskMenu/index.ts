@@ -10,6 +10,7 @@ namespace _ {
 
     function handleResult<T>(resolve: (result: T) => void, reject: (error: Error) => void, error: Error | null | undefined, result: T): void {
         if (error) {
+            console.error(error);
             reject(massageError(error));
         } else {
             resolve(result);
@@ -207,7 +208,7 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
             const children = await this.readDirectory(element.uri);
             return children.map(([name, type]) => (new CskTreeItem({ uri: vscode.Uri.file(path.join(element.uri.fsPath, name)), type })));
         }
-        const entryFolder = this._sdkPath && vscode.Uri.parse(this._sdkPath);
+        const entryFolder = this._sdkPath && vscode.Uri.file(this._sdkPath);
         if (entryFolder) {
             const children = await this.readDirectory(entryFolder);
             children.sort((a, b) => {
@@ -227,8 +228,8 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
         return this._readDirectory(uri);
     }
     async _readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
+        console.log('sdkfsPath-->', uri.fsPath);
         const children = await _.readdir(uri.fsPath);
-
         const result: [string, vscode.FileType][] = [];
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
@@ -301,7 +302,11 @@ export class NodeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
     };
     getSDKInfo = async (): Promise<any> => {
         const res = await SDK.getBasic() || {};
-        this._sdkPath = res.path || '';
+        const rootPath = (vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+            ? vscode.workspace.workspaceFolders[0].uri.fsPath : undefined;
+        let workspaceSdk = (rootPath && path.join(rootPath, '.sdk', 'zephyr')) || '';
+        workspaceSdk = await pathExists(workspaceSdk) ? workspaceSdk : '';
+        this._sdkPath = workspaceSdk || res.path || '';
         console.log('sdkPath', this._sdkPath);
         const sourceData = this.data;
         sourceData.map((child: TreeDataModel) => {
